@@ -4,8 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\File;
+use Illuminate\Validation\Rule; // Tambahkan ini
+use Illuminate\Support\Facades\Hash; // Tambahkan ini
 
 use App\Models\User;
 use App\Models\Departemen;
@@ -15,381 +16,182 @@ class MasterController extends Controller
     // GET VIEW
     public function karyawan()
     {
-         // SET TITLE
+        // SET TITLE
         $data['title'] = 'Data Karyawan';
         $data['icon'] = '<i class="fa-solid text-white fa-users fs-3x me-4"></i>';
         $data['subtitle'] = 'Kelola data dan informasi karyawan secara lengkap dan terstruktur';
 
         // GET DATA
         $departemen = Departemen::get();
+        $karyawan = User::where('peran', 2)->get(); // Ambil semua data karyawan
 
         // SET DATA
         $data['departemen'] = $departemen;
+        $data['karyawan'] = $karyawan; // Tambahkan data karyawan ke view
 
         return view('master.karyawan', $data);
     }
 
     public function departemen()
     {
-         // SET TITLE
+        // SET TITLE
         $data['title'] = 'Data Departemen';
         $data['icon'] = '<i class="fa-solid text-white fa-layer-group fs-3x me-4"></i>';
-        $data['subtitle'] = 'Kelola data dan informasi karyawan secara lengkap dan terstruktur';
+        $data['subtitle'] = 'Kelola data dan informasi departemen secara lengkap dan terstruktur';
 
+        // GET DATA
+        $departemen = Departemen::get(); // Ambil semua data departemen
+
+        // SET DATA
+        $data['departemen'] = $departemen; // Tambahkan data departemen ke view
 
         return view('master.departemen', $data);
     }
-
-
-
-    // FUNCTION
-
-    // USER
+   
     public function insert_user(Request $request)
     {
-        $role = $request->input('role');
-        if ($role == 2) {
-            $arrVar['id_departemen'] = 'Departemen';
-        }
-        $arrVar['nama'] = 'Nama lengkap';
-        $arrVar['nik'] = 'NIK';
-        $arrVar['username'] = 'Nama pengguna';
-        $arrVar['kata_sandi'] = 'Kata sandi';
+        // Aturan validasi
+        $rules = [
+            'nama' => 'required',
+            'nik' => 'required|numeric|unique:users,nik',
+            'username' => 'required|unique:users,username|regex:/^\S*$/u',
+            'kata_sandi' => 'required',
+        ];
 
-        $post = [];
-        $arrAccess = [];
-        $data = [];
-
-        foreach ($arrVar as $var => $value) {
-            $$var = $request->input($var);
-            if (!$$var) {
-                $data['required'][] = ['req_' . $var, "$value tidak boleh kosong!"];
-                $arrAccess[] = false;
-            } else {
-                if (!in_array($var, ['kata_sandi'])) {
-                    $post[$var] = trim($$var);
-                    $arrAccess[] = true;
-                }
-            }
+        // Validasi departemen hanya jika role = 2 (karyawan)
+        if ($request->input('peran') == 2) {
+            $rules['id_departemen'] = 'required';
         }
 
-        if (in_array(false, $arrAccess)) {
-            return response()->json(['status' => false, 'required' => $data['required']]);
+        $request->validate($rules, [
+            'nama.required' => 'Nama lengkap tidak boleh kosong!',
+            'nik.required' => 'NIK tidak boleh kosong!',
+            'nik.numeric' => 'NIK hanya boleh berisi angka!',
+            'nik.unique' => 'NIK sudah terdaftar!',
+            'username.required' => 'Nama pengguna tidak boleh kosong!',
+            'username.unique' => 'Nama pengguna sudah dipakai!',
+            'username.regex' => 'Nama pengguna tidak boleh mengandung spasi!',
+            'kata_sandi.required' => 'Kata sandi tidak boleh kosong!',
+            'id_departemen.required' => 'Departemen tidak boleh kosong!',
+        ]);
+
+        try {
+            $post = $request->except(['_token', 'kata_sandi']);
+            $post['kata_sandi'] = Hash::make($request->kata_sandi);
+            $post['created_by'] = session('app_id_user');
+            
+            User::create($post);
+            Session::flash('success', 'Data Karyawan Berhasil Ditambahkan!');
+        } catch (\Exception $e) {
+            Session::flash('error', 'Data Karyawan Gagal Ditambahkan!');
         }
 
-        // 🔎 Pengecekan tambahan
-        // NIK tidak boleh ada spasi dan harus angka
-        if (preg_match('/\s/', $request->nik) || !ctype_digit($request->nik)) {
-            return response()->json([
-                'status' => false,
-                'alert' => ['message' => 'NIK tidak valid! NIK hanya boleh berisi angka dan tanpa spasi!']
-            ]);
-        }
-
-        // Nama pengguna tidak boleh ada spasi
-        if (preg_match('/\s/', $request->username)) {
-            return response()->json([
-                'status' => false,
-                'alert' => ['message' => 'Nama pengguna tidak boleh mengandung spasi!']
-            ]);
-        }
-
-        // Cek apakah NIK sudah ada
-        if (User::where('nik', $request->nik)->exists()) {
-            return response()->json([
-                'status' => false,
-                'alert' => ['message' => 'NIK sudah terdaftar!']
-            ]);
-        }
-
-        // Cek apakah Nama pengguna sudah ada
-        if (User::where('username', $request->username)->exists()) {
-            return response()->json([
-                'status' => false,
-                'alert' => ['message' => 'Nama pengguna sudah dipakai!']
-            ]);
-        }
-
-        $tujuan = public_path('data/user/');
-        if (!File::exists($tujuan)) {
-            File::makeDirectory($tujuan, 0755, true, true);
-        }
-
-        $prefix = config('session.prefix');
-        $id_user = session($prefix . '_id_user');
-
-        $post['kata_sandi'] = $request->kata_sandi;
-        $post['created_by'] = $id_user;
-
-        $insert = User::create($post);
-
-        if ($insert) {
-            return response()->json([
-                'status' => true,
-                'alert' => ['message' => 'Data Karyawan Berhasil Ditambahkan!'],
-                'datatable' => 'table_karyawan',
-                'modal' => ['id' => '#modalKaryawan', 'action' => 'hide'],
-                'input' => ['all' => true]
-            ]);
-        } else {
-            return response()->json([
-                'status' => false,
-                'alert' => ['message' => 'Data Karyawan Gagal Ditambahkan!']
-            ]);
-        }
+        return redirect()->route('master.karyawan');
     }
-
 
     public function update_user(Request $request)
     {
-        $id = $request->id_user;
-        $user = User::where('id_user', $id)->first();
-
-        if (!$user) {
-            return response()->json([
-                'status' => false,
-                'alert' => ['message' => 'User tidak ditemukan!']
-            ]);
-        }
-
-        $role = $request->input('role');
-        if ($role == 2) {
-            $arrVar['id_departemen'] = 'Departemen';
-        }
-        $arrVar['nama'] = 'Nama lengkap';
-        $arrVar['nik'] = 'NIK';
-        $arrVar['username'] = 'Nama pengguna';
-
-        $post = [];
-        $arrAccess = [];
-        $data = [];
-
-        foreach ($arrVar as $var => $value) {
-            $$var = $request->input($var);
-            if (!$$var) {
-                $data['required'][] = ['req_' . $var, "$value tidak boleh kosong!"];
-                $arrAccess[] = false;
-            } else {
-                $post[$var] = trim($$var);
-                $arrAccess[] = true;
-            }
-        }
-
-        if (in_array(false, $arrAccess)) {
-            return response()->json(['status' => false, 'required' => $data['required']]);
-        }
-
-        // 🔎 Validasi tambahan
-        if (preg_match('/\s/', $request->nik) || !ctype_digit($request->nik)) {
-            return response()->json([
-                'status' => false,
-                'alert' => ['message' => 'NIK tidak valid! NIK hanya boleh berisi angka dan tanpa spasi!']
-            ]);
-        }
-
-        if (preg_match('/\s/', $request->username)) {
-            return response()->json([
-                'status' => false,
-                'alert' => ['message' => 'Nama pengguna tidak boleh mengandung spasi!']
-            ]);
-        }
-
-        // Cek unik NIK
-        if (User::where('nik', $request->nik)->where('id_user', '!=', $id)->exists()) {
-            return response()->json([
-                'status' => false,
-                'alert' => ['message' => 'NIK sudah terdaftar oleh pengguna lain!']
-            ]);
-        }
-
-        // Cek unik Username
-        if (User::where('username', $request->username)->where('id_user', '!=', $id)->exists()) {
-            return response()->json([
-                'status' => false,
-                'alert' => ['message' => 'Nama pengguna sudah dipakai oleh pengguna lain!']
-            ]);
-        }
-
-        // Password (opsional)
-        if ($request->filled('kata_sandi')) {
-            $post['kata_sandi'] = $request->kata_sandi;
-        }
-
-        $update = $user->update($post);
-
-        if ($update) {
-            return response()->json([
-                'status' => true,
-                'alert' => ['message' => 'Data berhasil diperbarui!'],
-                'datatable' => 'table_karyawan',
-                'modal' => ['id' => 'modalKaryawan', 'action' => 'hide'],
-                'input' => ['all' => true]
-            ]);
-        } else {
-            return response()->json([
-                'status' => false,
-                'alert' => ['message' => 'Gagal memperbarui data!']
-            ]);
-        }
-    }
-
-
-
-    // DEPARTEMEN
-    // INSERT DEPARTEMEN
-    public function insert_departemen(Request $request){
-        $arrVar = [
-            'nama' => 'Nama departemen',
-            'kode' => 'Kode departemen',
-            'warna' => 'Warna'
+        // Validasi
+        $rules = [
+            'nama' => 'required',
+            'nik' => ['required', 'numeric', Rule::unique('users')->ignore($request->id_user, 'id_user')],
+            'username' => ['required', Rule::unique('users')->ignore($request->id_user, 'id_user'), 'regex:/^\S*$/u'],
         ];
 
-        $post = [];
-        $arrAccess = [];
-        $data = [];
+        if ($request->input('peran') == 2) {
+            $rules['id_departemen'] = 'required';
+        }
 
-        foreach ($arrVar as $var => $value) {
-            $$var = $request->input($var);
-            if (!$$var) {
-                $data['required'][] = ['req_' . $var, "$value tidak boleh kosong!"];
-                $arrAccess[] = false;
-            } else {
-                // Pengecekan spasi untuk 'kode'
-                if ($var === 'kode' && str_contains($$var, ' ')) {
-                    $data['required'][] = ['req_' . $var, "Kode departemen tidak boleh mengandung spasi!"];
-                    $arrAccess[] = false;
-                } else {
-                    $post[$var] = trim($$var);
-                    $arrAccess[] = true;
-                }
+        $request->validate($rules, [
+            'nama.required' => 'Nama lengkap tidak boleh kosong!',
+            'nik.required' => 'NIK tidak boleh kosong!',
+            'nik.numeric' => 'NIK hanya boleh berisi angka!',
+            'nik.unique' => 'NIK sudah terdaftar oleh pengguna lain!',
+            'username.required' => 'Nama pengguna tidak boleh kosong!',
+            'username.unique' => 'Nama pengguna sudah dipakai oleh pengguna lain!',
+            'username.regex' => 'Nama pengguna tidak boleh mengandung spasi!',
+            'id_departemen.required' => 'Departemen tidak boleh kosong!',
+        ]);
+
+        $user = User::findOrFail($request->id_user);
+        
+        try {
+            $post = $request->except(['_token', 'kata_sandi']);
+            if ($request->filled('kata_sandi')) {
+                $post['kata_sandi'] = Hash::make($request->kata_sandi);
             }
+            
+            $user->update($post);
+            Session::flash('success', 'Data Karyawan Berhasil Diperbarui!');
+        } catch (\Exception $e) {
+            Session::flash('error', 'Data Karyawan Gagal Diperbarui!');
         }
 
-        if (in_array(false, $arrAccess)) {
-            return response()->json(['status' => false, 'required' => $data['required']]);
-        }
-
-        $cek_kode = Departemen::where('kode',$kode)->first();
-        if ($cek_kode) {
-            return response()->json([
-                'status' => false,
-                'alert' => ['message' => 'Kode sudah terdaftar!']
-            ]);
-        }
-
-        $insert = Departemen::create($post);
-
-        if ($insert) {
-            return response()->json([
-                'status' => true,
-                'alert' => ['message' => 'Data Departemen Berhasil Ditambahkan!'],
-                'datatable' => 'table_departemen',
-                'modal' => ['id' => '#modalDepartemen', 'action' => 'hide'],
-                'input' => ['all' => true]
-            ]);
-        } else {
-            return response()->json([
-                'status' => false,
-                'alert' => ['message' => 'Data Departemen Gagal Ditambahkan!']
-            ]);
-        }
+        return redirect()->route('master.karyawan');
     }
 
+    // ---
+    // DEPARTEMEN (SUDAH DIUBAH TANPA JSON)
+    // ---
+    public function insert_departemen(Request $request){
+        $request->validate([
+            'nama' => 'required',
+            'kode' => 'required|unique:departemen,kode|alpha_dash',
+            'warna' => 'required',
+        ], [
+            'nama.required' => 'Nama departemen tidak boleh kosong!',
+            'kode.required' => 'Kode departemen tidak boleh kosong!',
+            'kode.unique' => 'Kode departemen sudah terdaftar!',
+            'kode.alpha_dash' => 'Kode departemen hanya boleh berisi huruf, angka, tanda hubung, dan garis bawah!',
+            'warna.required' => 'Warna tidak boleh kosong!',
+        ]);
 
-    // UPDATE DEPARTEMEN
+        try {
+            Departemen::create($request->all());
+            Session::flash('success', 'Data Departemen Berhasil Ditambahkan!');
+        } catch (\Exception $e) {
+            Session::flash('error', 'Data Departemen Gagal Ditambahkan!');
+        }
+
+        return redirect()->route('master.departemen');
+    }
+
     public function update_departemen(Request $request)
     {
-        $id = $request->id_departemen;
-        $dbdepartemen = Departemen::where('id_departemen', $id)->first();
+        $request->validate([
+            'nama' => 'required',
+            'kode' => 'required|alpha_dash|unique:departemen,kode,' . $request->id_departemen . ',id_departemen',
+            'warna' => 'required',
+        ], [
+            'nama.required' => 'Nama departemen tidak boleh kosong!',
+            'kode.required' => 'Kode departemen tidak boleh kosong!',
+            'kode.alpha_dash' => 'Kode departemen hanya boleh berisi huruf, angka, tanda hubung, dan garis bawah!',
+            'kode.unique' => 'Kode departemen sudah terdaftar!',
+            'warna.required' => 'Warna tidak boleh kosong!',
+        ]);
 
-        if (!$dbdepartemen) {
-            return response()->json([
-                'status' => false,
-                'alert' => ['message' => 'Data Departemen Tidak Ditemukan!']
-            ]);
+        $departemen = Departemen::findOrFail($request->id_departemen);
+
+        try {
+            $departemen->update($request->all());
+            Session::flash('success', 'Data Departemen Berhasil Diperbarui!');
+        } catch (\Exception $e) {
+            Session::flash('error', 'Data Departemen Gagal Diperbarui!');
         }
 
-        $arrVar = [
-            'nama' => 'Nama departemen',
-            'kode' => 'Kode departemen',
-            'warna' => 'Warna'
-        ];
-
-        $post = [];
-        $arrAccess = [];
-        $data = [];
-
-        foreach ($arrVar as $var => $value) {
-            $$var = $request->input($var);
-            if (!$$var) {
-                $data['required'][] = ['req_' . $var, "$value tidak boleh kosong!"];
-                $arrAccess[] = false;
-            } else {
-                // Pengecekan spasi untuk 'kode'
-                if ($var === 'kode' && str_contains($$var, ' ')) {
-                    $data['required'][] = ['req_' . $var, "Kode departemen tidak boleh mengandung spasi!"];
-                    $arrAccess[] = false;
-                } else {
-                    $post[$var] = trim($$var);
-                    $arrAccess[] = true;
-                }
-            }
-        }
-
-        if (in_array(false, $arrAccess)) {
-            return response()->json(['status' => false, 'required' => $data['required']]);
-        }
-
-        $cek_kode = Departemen::where('kode',$kode)->where('id_departemen','!=',$id)->first();
-        if ($cek_kode) {
-            return response()->json([
-                'status' => false,
-                'alert' => ['message' => 'Kode sudah terdaftar!']
-            ]);
-        }
-
-        $update = $dbdepartemen->update($post);
-
-        if ($update) {
-            return response()->json([
-                'status' => true,
-                'alert' => ['message' => 'Data berhasil diperbarui!'],
-                'datatable' => 'table_departemen',
-                'modal' => ['id' => '#modalDepartemen', 'action' => 'hide'],
-                'input' => ['all' => true]
-            ]);
-        } else {
-            return response()->json([
-                'status' => false,
-                'alert' => ['message' => 'Gagal memperbarui data!']
-            ]);
-        }
+        return redirect()->route('master.departemen');
     }
 
-    // GET SINGLE DEPARTEMEN (untuk Edit)
-    public function get_departemen(Request $request)
-    {
-        $departemen = Departemen::where('id_departemen', $request->id)->first();
-        if (!$departemen) {
-            return response()->json(['status' => false, 'message' => 'Departemen tidak ditemukan!']);
-        }
-        return response()->json($departemen);
-    }
-
-    // DELETE DEPARTEMEN
     public function delete_departemen(Request $request)
     {
-        $departemen = Departemen::where('id_departemen', $request->id)->first();
-        if (!$departemen) {
-            return response()->json(['status' => false, 'message' => 'Departemen tidak ditemukan!']);
+        try {
+            $departemen = Departemen::findOrFail($request->id_departemen);
+            $departemen->delete();
+            Session::flash('success', 'Departemen berhasil dihapus!');
+        } catch (\Exception $e) {
+            Session::flash('error', 'Departemen gagal dihapus!');
         }
 
-        $departemen->delete();
-        return response()->json([
-            'status' => true,
-            'alert' => ['message' => 'Departemen berhasil dihapus!'],
-            'datatable' => 'table_departemen'
-        ]);
+        return redirect()->route('master.departemen');
     }
-
 }

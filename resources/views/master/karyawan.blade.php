@@ -3,9 +3,6 @@
 @push('styles')
 @endpush
 
-@push('script')
-<script src="{{ asset('assets/public/js/karyawan.js') }}"></script>
-@endpush
 
 @section('content')
 <div class="container-fluid p-0">

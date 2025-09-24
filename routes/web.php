@@ -23,7 +23,7 @@ Route::middleware(AuthMiddleware::class)->group(function () {
     // GET METHOD
     Route::get('/login', [AuthController::class, 'index'])->name('login');
 
-     // POST METHOD
+    // POST METHOD
     Route::post('/login-proses', [AuthController::class, 'loginProses'])->name('login.process');
 });
 
@@ -39,29 +39,27 @@ Route::middleware(DashboardMiddleware::class)->group(function () {
 
     // MASTER CONTROLLER
     Route::controller(MasterController::class)->group(function () {
-
         // GET
         Route::get('/master/karyawan', 'karyawan')->name('master.karyawan');
         Route::get('/master/departemen', 'departemen')->name('master.departemen');
         
-
         // POST
         // DEPARTEMEN
-        Route::post('/master/departemen/insert', 'insert_departemen')->name('insert.departemen');
-        Route::post('/master/departemen/update', 'update_departemen')->name('update.departemen');
-        Route::post('/master/departemen/get', 'get_departemen')->name('get.departemen');
-        Route::post('/master/departemen/delete', 'delete_departemen')->name('delete.departemen');
+        Route::post('/master/departemen/insert', 'insert_departemen')->name('master.departemen.insert');
+        Route::post('/master/departemen/update', 'update_departemen')->name('master.departemen.update');
+        // Rute untuk "delete" tetap POST untuk konsistensi dengan form
+        Route::post('/master/departemen/delete', 'delete_departemen')->name('master.departemen.delete'); 
+
+        // Rute berikut dihapus karena tidak lagi diperlukan
+        // Route::post('/master/departemen/get', 'get_departemen')->name('get.departemen');
 
         // KARYAWAN
         Route::post('/master/karyawan/update', 'update_user')->name('update.karyawan');
         Route::post('/master/karyawan/insert', 'insert_user')->name('insert.karyawan');
-
-
     });
 
     // PRESENSI CONTROLLER
     Route::controller(PresensiController::class)->group(function () {
-
         // GET
         Route::get('/jenis/perizinan', 'jenis')->name('presensi.jenis');
 
@@ -69,19 +67,17 @@ Route::middleware(DashboardMiddleware::class)->group(function () {
         // JENIS
         Route::post('/presensi/jenis/update', 'update_jenis')->name('update.jenis');
         Route::post('/presensi/jenis/insert', 'insert_jenis')->name('insert.jenis');
-
-
     });
 
-     // DATATABLE
+    // DATATABLE
     Route::controller(TableManagement::class)->group(function () {
         // MASTER
-        Route::post('table/departemen', 'table_departemen')->name('table.departemen');
+        // Rute berikut dihapus karena tidak lagi menggunakan DataTables berbasis AJAX
+        // Route::post('table/departemen', 'table_departemen')->name('table.departemen'); 
         Route::post('table/karyawan', 'table_karyawan')->name('table.karyawan');
         // PRESENSI
         Route::post('table/jenis', 'table_jenis')->name('table.jenis');
     });
-
 
     // SETTING CONTROLLER
     Route::controller(SettingController::class)->group(function(){
@@ -101,11 +97,7 @@ Route::middleware(DashboardMiddleware::class)->group(function () {
         Route::post('/single/{db?}/{id?}', 'single');
         Route::post('/allDelete/{db?}/{id?}', 'allDelete');
     });
-
-
 });
-
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
-
