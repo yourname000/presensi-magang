@@ -1,15 +1,5 @@
 <!--begin::Head-->
 <head>
-    <base href="{{ url('/') }}"/>
-    <title>{{ (isset($setting->meta_title)) ? ucwords($setting->meta_title) : '' }}{{ (isset($title)) ? ' | '.$title : '' }}</title>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    @if(isset($setting->meta_description) && $setting->meta_description)
-    <meta name="description" content="{{ $setting->meta_description }}" />
-    @endif
-    @if(isset($setting->meta_keyword) && $setting->meta_keyword)
-    <meta name="keywords" content="{{ $setting->meta_keyword }}" />
-    @endif
     <!--begin::Fonts(mandatory for all pages)-->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700">
     <!--end::Fonts-->
