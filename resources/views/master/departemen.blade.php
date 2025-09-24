@@ -25,7 +25,7 @@
                 </div>
             </div>
 
-            {{-- Table Departemen --}}
+            {{-- Tabel Departemen --}}
             <div class="card shadow-sm">
                 <div class="card-body p-0 table-responsive">
                     <table class="table table-bordered table-striped align-middle mb-0" id="table_departemen">
