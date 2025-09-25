@@ -9,8 +9,16 @@
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
-<!-- SweetAlert2 -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- Inisialisasi DataTables -->
+<script>
+$(document).ready(function() {
+    $('#table_departemen').DataTable({
+        paging: true,
+        searching: true,
+        ordering: true
+    });
+});
+</script>
 
 <!-- Vis Timeline -->
 <link href="https://cdn.jsdelivr.net/npm/vis-timeline@7.7.0/styles/vis-timeline-graph2d.min.css" rel="stylesheet">
@@ -62,8 +70,5 @@
         });
     });
 </script>
-
-<!-- Custom Scripts -->
-<script src="{{ asset('assets/public/js/custom-datatable.js') }}"></script>
 
 @stack('script')
