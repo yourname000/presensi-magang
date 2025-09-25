@@ -32,7 +32,7 @@ class MasterController extends Controller
         return view('master.karyawan', $data);
     }
 
-    public function departemen()
+    public function departemen(Request $request)
     {
         // SET TITLE
         $data['title'] = 'Data Departemen';
@@ -40,7 +40,15 @@ class MasterController extends Controller
         $data['subtitle'] = 'Kelola data dan informasi departemen secara lengkap dan terstruktur';
 
         // GET DATA
-        $departemen = Departemen::get(); // Ambil semua data departemen
+        $query = Departemen::query();
+
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where('kode', 'LIKE', "%{$search}%")
+                ->orWhere('nama', 'LIKE', "%{$search}%");
+        }
+
+        $departemen = $query->get();  //Ambil data departemen
 
         // SET DATA
         $data['departemen'] = $departemen; // Tambahkan data departemen ke view
@@ -194,4 +202,6 @@ class MasterController extends Controller
 
         return redirect()->route('master.departemen');
     }
+
+    
 }
