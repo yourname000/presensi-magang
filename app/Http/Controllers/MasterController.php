@@ -138,6 +138,19 @@ class MasterController extends Controller
         return redirect()->route('master.karyawan');
     }
 
+    public function delete_user(Request $request)
+    {
+        try {
+            $user = User::findOrFail($request->id_user);
+            $user->delete();
+            Session::flash('success', 'Data Karyawan berhasil dihapus!');
+        } catch (\Exception $e) {
+            Session::flash('error', 'Data Karyawan gagal dihapus!');
+        }
+
+        return redirect()->route('master.karyawan');
+    }
+
     // ---
     // DEPARTEMEN (SUDAH DIUBAH TANPA JSON)
     // ---

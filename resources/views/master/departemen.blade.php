@@ -50,9 +50,9 @@
                     <table class="table table-bordered table-striped align-middle mb-0" id="table_departemen">
                         <thead class="table-light text-center">
                             <tr>
-                                <th style="min-width:100px;">Kode Departemen</th>
-                                <th style="min-width:200px;">Nama Departemen</th>
-                                <th style="min-width:100px;">Aksi</th>
+                                <th style="min-width:100px;" class="text-center">Kode Departemen</th>
+                                <th style="min-width:200px;" class="text-center">Nama Departemen</th>
+                                <th style="min-width:100px;" class="text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>

@@ -56,6 +56,7 @@ Route::middleware(DashboardMiddleware::class)->group(function () {
         // KARYAWAN
         Route::post('/master/karyawan/update', 'update_user')->name('update.karyawan');
         Route::post('/master/karyawan/insert', 'insert_user')->name('insert.karyawan');
+        Route::post('/master/karyawan/delete', 'delete_user')->name('delete.karyawan'); 
     });
 
     // PRESENSI CONTROLLER

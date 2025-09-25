@@ -11,13 +11,23 @@
 
 <!-- Inisialisasi DataTables -->
 <script>
-$(document).ready(function() {
-    $('#table_departemen').DataTable({
-        paging: true,
-        searching: false,
-        ordering: true
+    // DataTables untuk Departemen
+    $(document).ready(function() {
+        $('#table_departemen').DataTable({
+            paging: true,
+            searching: false,
+            ordering: true
+        });
     });
-});
+
+    // DataTables untuk Karyawan
+    $(document).ready(function() {
+        $('#table_karyawan').DataTable({
+            paging: true,
+            searching: false,
+            ordering: true
+        });
+    });
 </script>
 
 <!-- Vis Timeline -->
