@@ -33,15 +33,15 @@
                     <i class="fa-solid fa-plus me-1"></i> Departemen
                 </button>
 
-                    <!-- Form Pencarian -->
-                    <form action="{{ route('master.departemen') }}" method="GET" class="d-flex" style="max-width:300px;">
-                        <div class="input-group">
+                <!-- Form Pencarian -->
+                <form action="{{ route('master.departemen') }}" method="GET" class="d-flex" style="max-width:300px;">
+                    <div class="input-group">
                         <input type="text" name="search" class="form-control" placeholder="Cari Departemen" value="{{ request('search') }}">
                         <button class="btn btn-info" type="submit">
                             <i class="fa-solid fa-magnifying-glass"></i>
                         </button>
-                    </form>
-                </div>
+                    </div>
+                </form>
             </div>
 
             {{-- Tabel Departemen --}}
@@ -59,7 +59,13 @@
                             @foreach($departemen as $d)
                                 <tr class="text-center">
                                     <td>{{ $d->kode }}</td>
-                                    <td>{{ $d->nama }}</td>
+                                    <td>
+                                        {{-- Nama departemen tampil sebagai badge dengan warna dari DB --}}
+                                        <span class="badge text-white px-3 py-2"
+                                              style="background-color: {{ $d->warna }};">
+                                            {{ $d->nama }}
+                                        </span>
+                                    </td>
                                     <td>
                                         {{-- Tombol Edit --}}
                                         <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalEdit{{ $d->id_departemen }}">
