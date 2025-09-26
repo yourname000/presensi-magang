@@ -14,7 +14,7 @@ use App\Models\Departemen;
 class MasterController extends Controller
 {
     // GET VIEW
-    public function karyawan()
+    public function karyawan(Request $request)
     {
         // SET TITLE
         $data['title'] = 'Data Karyawan';
@@ -23,7 +23,23 @@ class MasterController extends Controller
 
         // GET DATA
         $departemen = Departemen::get();
-        $karyawan = User::where('peran', 2)->get(); // Ambil semua data karyawan
+
+        // Query karyawan dengan search 
+        $query = User::with('departemen')->where('peran', 2);
+
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nik', 'LIKE', "%{$search}%")
+                ->orWhere('nama', 'LIKE', "%{$search}%")
+                ->orWhere('username', 'LIKE', "%{$search}%")
+                ->orWhereHas('departemen', function($dept) use ($search) {
+                    $dept->where('nama', 'LIKE', "%{$search}%");
+                });
+            });
+        }
+
+        $karyawan = $query->get(); //Ambil data karyawan dengan departemen terkait
 
         // SET DATA
         $data['departemen'] = $departemen;

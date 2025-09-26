@@ -17,12 +17,10 @@ return new class extends Migration
             $table->string('logo', 199)->nullable();
             $table->string('icon', 199)->nullable();
             $table->string('meta_title', 255)->nullable(); // Title untuk halaman web
-            $table->text('meta_keyword')->nullable(); // Meta keywords SEO
-            $table->text('meta_description')->nullable(); // Meta description SEO
-            $table->text('meta_author')->nullable(); // Meta author
-            $table->text('meta_address')->nullable(); // Alamat lengkap
-            $table->string('meta_phone',200)->nullable(); // Alamat lengkap
-            $table->string('meta_email',200)->nullable(); // Alamat lengkap
+            $table->string('lokasi', 255)->nullable();
+            $table->string('lat',200)->nullable();
+            $table->string('lng',200)->nullable();
+            $table->integer('radius')->nullable();
             $table->timestamps(); // created_at & updated_at otomatis
             
         });

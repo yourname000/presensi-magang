@@ -17,11 +17,7 @@ class SettingData extends Seeder
             'id_pengaturan' => 1,
             'logo' => 'logo.png',
             'icon' => 'icon.png',
-            'meta_title' => '',
-            'meta_author' => '',
-            'meta_keyword' => '',
-            'meta_description' => '',
-            'meta_address' => '',
+            'meta_title' => 'HRM',
             'updated_at' => now(),
         ]);
     }

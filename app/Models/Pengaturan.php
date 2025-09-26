@@ -15,16 +15,21 @@ class Pengaturan extends Model
     // Primary key
     protected $primaryKey = 'id_pengaturan';
 
-    // Mass assignable fields
+    // PK auto increment
+    public $incrementing = true;
+    protected $keyType = 'int';
+
+    // timestamps true karena kamu pakai $table->timestamps()
+    public $timestamps = true;
+
+    // Kolom yang boleh diisi
     protected $fillable = [
         'logo',
         'icon',
         'meta_title',
-        'meta_keyword',
-        'meta_description',
-        'meta_author',
-        'meta_address',
-        'meta_phone',
-        'meta_email',
+        'lokasi',
+        'lat',
+        'lng',
+        'radius',
     ];
 }

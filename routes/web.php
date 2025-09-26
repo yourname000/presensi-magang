@@ -83,11 +83,12 @@ Route::middleware(DashboardMiddleware::class)->group(function () {
     // SETTING CONTROLLER
     Route::controller(SettingController::class)->group(function(){
         // GET
-        Route::get('/setting', 'index')->name('setting');
+        Route::get('/pengaturan', 'index')->name('pengaturan');
 
         // POST
-        Route::post('/setting/logo', 'updateLogo')->name('setting.logo');
-        Route::post('/setting/seo', 'updateSeo')->name('setting.seo');
+        Route::post('/setting/website', 'updateWebsite')->name('setting.website');
+        Route::post('/setting/lokasi', 'updateLocation')->name('setup.location');
+        Route::post('/setting/shift', 'updateShift')->name('setup.shift');
         Route::post('/setting/sosmed', 'setupSosmed')->name('setting.sosmed');
         Route::post('/setting/insert/sosmed', 'insert_sosmed')->name('insert.sosmed');
         Route::post('/setting/update/sosmed', 'update_sosmed')->name('update.sosmed');
