@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\File;
-use Illuminate\Validation\Rule; // Tambahkan ini
-use Illuminate\Support\Facades\Hash; // Tambahkan ini
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Hash;
 
 use App\Models\User;
 use App\Models\Departemen;
@@ -22,28 +22,26 @@ class MasterController extends Controller
         $data['subtitle'] = 'Kelola data dan informasi karyawan secara lengkap dan terstruktur';
 
         // GET DATA
-        $departemen = Departemen::get();
+        // Mulai query dengan filter peran terlebih dahulu
+        $query = User::where('peran', 2);
 
-        // Query karyawan dengan search 
-        $query = User::with('departemen')->where('peran', 2);
-
+        // Tambahkan logika pencarian jika ada input dari user
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('nik', 'LIKE', "%{$search}%")
-                ->orWhere('nama', 'LIKE', "%{$search}%")
-                ->orWhere('username', 'LIKE', "%{$search}%")
-                ->orWhereHas('departemen', function($dept) use ($search) {
-                    $dept->where('nama', 'LIKE', "%{$search}%");
-                });
+                $q->where('nama', 'LIKE', "%{$search}%")
+                  ->orWhere('nik', 'LIKE', "%{$search}%")
+                  ->orWhere('username', 'LIKE', "%{$search}%");
             });
         }
-
-        $karyawan = $query->get(); //Ambil data karyawan dengan departemen terkait
+        
+        // Ambil data setelah filter diterapkan
+        $karyawan = $query->get();
+        $departemen = Departemen::get();
 
         // SET DATA
         $data['departemen'] = $departemen;
-        $data['karyawan'] = $karyawan; // Tambahkan data karyawan ke view
+        $data['karyawan'] = $karyawan;
 
         return view('master.karyawan', $data);
     }
@@ -61,17 +59,17 @@ class MasterController extends Controller
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
             $query->where('kode', 'LIKE', "%{$search}%")
-                ->orWhere('nama', 'LIKE', "%{$search}%");
+                  ->orWhere('nama', 'LIKE', "%{$search}%");
         }
 
-        $departemen = $query->get();  //Ambil data departemen
+        $departemen = $query->get();
 
         // SET DATA
-        $data['departemen'] = $departemen; // Tambahkan data departemen ke view
+        $data['departemen'] = $departemen;
 
         return view('master.departemen', $data);
     }
-   
+    
     public function insert_user(Request $request)
     {
         // Aturan validasi
@@ -154,21 +152,38 @@ class MasterController extends Controller
         return redirect()->route('master.karyawan');
     }
 
-    public function delete_user(Request $request)
+    /**
+     * Fungsi untuk menghapus data user secara massal.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function delete_multiple_users(Request $request)
     {
+        // Ambil ID dari data yang dipilih.
+        // Pastikan nama input di form Anda adalah 'id_user[]'.
+        $selectedIds = $request->input('id_user');
+
+        // Jika tidak ada ID yang dipilih, kembalikan ke halaman sebelumnya.
+        if (empty($selectedIds)) {
+            Session::flash('error', 'Tidak ada data karyawan yang dipilih!');
+            return redirect()->route('master.karyawan');
+        }
+
         try {
-            $user = User::findOrFail($request->id_user);
-            $user->delete();
-            Session::flash('success', 'Data Karyawan berhasil dihapus!');
+            // Hapus data dari tabel 'users' di mana 'id_user' ada di dalam array $selectedIds.
+            User::whereIn('id_user', $selectedIds)->delete();
+            Session::flash('success', 'Data karyawan yang dipilih berhasil dihapus!');
         } catch (\Exception $e) {
-            Session::flash('error', 'Data Karyawan gagal dihapus!');
+            // Tangkap error jika proses penghapusan gagal.
+            Session::flash('error', 'Gagal menghapus data karyawan yang dipilih!');
         }
 
         return redirect()->route('master.karyawan');
     }
 
     // ---
-    // DEPARTEMEN (SUDAH DIUBAH TANPA JSON)
+    // DEPARTEMEN
     // ---
     public function insert_departemen(Request $request){
         $request->validate([
@@ -231,6 +246,4 @@ class MasterController extends Controller
 
         return redirect()->route('master.departemen');
     }
-
-    
 }

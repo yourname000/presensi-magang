@@ -19,15 +19,6 @@
             ordering: true
         });
     });
-
-    // DataTables untuk Karyawan
-    $(document).ready(function() {
-        $('#table_karyawan').DataTable({
-            paging: true,
-            searching: false,
-            ordering: true
-        });
-    });
 </script>
 
 <!-- Vis Timeline -->

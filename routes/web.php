@@ -54,9 +54,10 @@ Route::middleware(DashboardMiddleware::class)->group(function () {
         // Route::post('/master/departemen/get', 'get_departemen')->name('get.departemen');
 
         // KARYAWAN
-        Route::post('/master/karyawan/update', 'update_user')->name('update.karyawan');
-        Route::post('/master/karyawan/insert', 'insert_user')->name('insert.karyawan');
-        Route::post('/master/karyawan/delete', 'delete_user')->name('delete.karyawan'); 
+        Route::post('/master/karyawan/update', 'update_user')->name('master.karyawan.update');
+        Route::post('/master/karyawan/insert', 'insert_user')->name('master.karyawan.insert');
+        Route::post('/master/karyawan/delete', 'delete_user')->name('master.karyawan.delete');
+        Route::delete('/master/karyawan/delete-multiple', 'delete_multiple_users')->name('master.karyawan.delete_multiple');
     });
 
     // PRESENSI CONTROLLER
