@@ -53,15 +53,30 @@
 
             <li class="sidebar-heading">PENGATURAN</li>
             <li class="nav-item">
-                <a href="#" class="nav-link">
-                    <i class="fa-solid fa-gear me-2"></i> Pengaturan
+                <a href="{{ route('pengaturan', ['page' => 'lokasi']) }}"
+                    class="nav-link {{ $segment1 == 'pengaturan' && request('page') == 'lokasi' ? 'active' : '' }}">
+                    <i class="fa-solid fa-gear me-2"></i> Lokasi
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="{{ route('pengaturan', ['page' => 'shift']) }}"
+                    class="nav-link {{ $segment1 == 'pengaturan' && request('page') == 'shift' ? 'active' : '' }}">
+                    <i class="fa-solid fa-clock me-2"></i> Shift & Jam Kerja
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="{{ route('pengaturan', ['page' => 'website']) }}"
+                    class="nav-link {{ $segment1 == 'pengaturan' && request('page') == 'website' ? 'active' : '' }}">
+                    <i class="fa-solid fa-clock me-2"></i> Website
                 </a>
             </li>
 
             <li class="sidebar-heading">Admin</li>
             <li class="nav-item">
                 <a href="{{ route('logout') }}" class="nav-link">
-                    <i class="fa-solid fa-right-from-bracket me-2"></i> KELUAR
+                    <i class="fa-solid fa-right-from-bracket me-2"></i> Keluar
                 </a>
             </li>
         </ul>

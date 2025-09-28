@@ -21,7 +21,7 @@ class SettingController extends Controller
         $data = [];
 
         // GLBL
-        $data['icon'] = '<<i class="fa-solid text-white fa-users fs-3x me-4">';
+        $data['icon'] = '<i class="fa-solid fa-gear fs-3x text-white me-4"></i>';
         $data['title'] = 'Pengaturan';
         $data['subtitle'] = 'Atur lokasi dan waktu kerja karyawan dengan mudah';
 
