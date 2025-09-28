@@ -2,33 +2,14 @@
 
 @push('styles')
 <style>
-    .pengaturan-tab-header {
-        display: flex;
-        justify-content: space-between;
-        border-bottom: 2px solid #ddd;
-        position: relative;
-    }
-
-    .pengaturan-tab-link {
-        flex: 1;
-        text-align: center;
-        padding: 10px;
+    .nav-tabs .nav-link.active {
+        color: #4A9289 !important;
         font-weight: bold;
-        cursor: pointer;
-        color: #333;
+        border-color: #4A9289 #4A9289 #fff;
+    }
+    .nav-tabs .nav-link {
         font-size: 17px;
-    }
-
-    .pengaturan-tab-link.active {
-        color: #0d6efd; /* Bootstrap primary color */
-    }
-
-    .pengaturan-tab-underline {
-        position: absolute;
-        bottom: -2px;
-        height: 2px;
-        background: #0d6efd;
-        transition: all 0.3s ease;
+        color: #333;
     }
 </style>
 @endpush
@@ -43,28 +24,23 @@
 
     <div class="row mb-4">
         <div class="col-lg-10 mx-auto">
-            <!-- Card -->
+            {{-- Card --}}
             <div class="card">
                 <div class="card-body">
                     <!-- Tab Header -->
-                    <div class="pengaturan-tab-header" id="pengaturanTabHeader">
-                        <div class="pengaturan-tab-link {{ (!$page || $page == 'lokasi') ? 'active' : '' }}" onclick="set_url_params('lokasi')" data-bs-target="#pengaturan-lokasi">Lokasi</div>
-                        <div class="pengaturan-tab-link {{ ($page == 'shift') ? 'active' : '' }}" onclick="set_url_params('shift')" data-bs-target="#pengaturan-shift">Shift & Jam Kerja</div>
-                        <div class="pengaturan-tab-link {{ ($page == 'website') ? 'active' : '' }}" onclick="set_url_params('website')" data-bs-target="#pengaturan-website">Website</div>
-                        <div class="pengaturan-tab-underline" id="pengaturanTabUnderline"></div>
-                    </div>
+                    <ul class="nav nav-tabs" id="pengaturanTab" role="tablist">
+                        <li class="nav-item" role="presentation"><button class="nav-link {{ (!$page || $page == 'lokasi') ? 'active' : '' }}" id="lokasi-tab" data-bs-toggle="tab" data-bs-target="#pengaturan-lokasi" type="button" role="tab">Lokasi</button></li>
+                        <li class="nav-item" role="presentation"><button class="nav-link {{ ($page == 'shift') ? 'active' : '' }}" id="shift-tab" data-bs-toggle="tab" data-bs-target="#pengaturan-shift" type="button" role="tab">Shift & Jam Kerja</button></li>
+                        <li class="nav-item" role="presentation"><button class="nav-link {{ ($page == 'website') ? 'active' : '' }}" id="website-tab" data-bs-toggle="tab" data-bs-target="#pengaturan-website" type="button" role="tab">Website</button></li>
+                    </ul>
+
 
                     <!-- Tab Content -->
-                    <div class="pengaturan-tab-content mt-3">
-                        <div id="pengaturan-lokasi" class="{{ (!$page || $page == 'lokasi') ? '' : 'd-none' }} my-3">
-                            @include('pengaturan.page.location')
-                        </div>
-                        <div id="pengaturan-shift" class="{{ ($page != 'shift') ? 'd-none' : '' }} my-3">
-                            @include('pengaturan.page.shift')
-                        </div>
-                        <div id="pengaturan-website" class="{{ ($page != 'website') ? 'd-none' : '' }} my-3">
-                            @include('pengaturan.page.website')
-                        </div>
+                    <div class="tab-content mt-3" id="pengaturanTabContent">
+                        <div class="tab-pane fade {{ (!$page || $page == 'lokasi') ? 'show active' : '' }}" id="pengaturan-lokasi" role="tabpanel" aria-labelledby="lokasi-tab">@include('pengaturan.page.location')</div>
+                        <div class="tab-pane fade {{ ($page == 'shift') ? 'show active' : '' }}" id="pengaturan-shift" role="tabpanel" aria-labelledby="shift-tab">@include('pengaturan.page.shift')</div>
+                        <div class="tab-pane fade {{ ($page == 'website') ? 'show active' : '' }}" id="pengaturan-website" role="tabpanel" aria-labelledby="website-tab">@include('pengaturan.page.website')</div>
+                    </div>
                     </div>
                 </div>
             </div>
