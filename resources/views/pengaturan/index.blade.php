@@ -22,7 +22,7 @@
 <div class="container-fluid">
     @include('partials.admin.heading')
 
-    <div class="row mb-4">
+    <div class="row mb-4 mt-4">
         <div class="col-lg-10 mx-auto">
             {{-- Card --}}
             <div class="card">

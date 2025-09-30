@@ -1,6 +1,6 @@
 <!--begin::Form-->
-<form id="form_location" class="form mt-10 pt-5" action="{{ route('setup.location') }}"  method="POST" enctype="multipart/form-data">
-    <div class="row px-lg-5 px-sm-0">
+<form id="form_location" class="form" action="{{ route('setup.location') }}"  method="POST" enctype="multipart/form-data">
+    <div class="row">
         <div class="col-lg-6 col-md-6 col-sm-12">
             <!--begin::Input group-->
             <div class="fv-row mb-7" id="req_lat">
@@ -27,7 +27,7 @@
         </div>
     </div>
 
-    <div class="row px-lg-5 px-sm-0">
+    <div class="row">
         <div class="col-lg-6 col-md-6 col-sm-12">
             <!--begin::Input group-->
             <div class="fv-row mb-7" id="req_radius">
@@ -56,8 +56,8 @@
     </div>
     
     <!--begin::Actions-->
-    <div class="w-100 d-flex justify-content-center align-items-center pt-15">
-        <button type="button" id="submit_location" onclick="submit_form(this,'#form_location')" class="mx-5 btn-modal btn btn-primary">
+   <div class="w-100 d-flex justify-content-center align-items-center mt-5">
+        <button type="button" id="submit_location" onclick="submit_form(this,'#form_location')" class="btn-modal btn btn-primary">
             <span class="indicator-label">Simpan</span>
         </button>
     </div>

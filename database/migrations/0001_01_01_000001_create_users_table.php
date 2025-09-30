@@ -16,7 +16,7 @@ return new class extends Migration
             $table->integer('peran')->default(2)->comment('1 = admin, 2 = employee');
             $table->unsignedBigInteger('id_departemen')->nullable();
             $table->string('username', 199)->nullable();
-             $table->string('nik',199)->nullable();
+            $table->string('nik',199)->nullable();
             $table->string('nama',199)->nullable();
             $table->string('kata_sandi', 200)->nullable();
             $table->unsignedBigInteger('created_by')->nullable();
