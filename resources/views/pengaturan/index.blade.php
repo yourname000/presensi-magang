@@ -15,7 +15,7 @@
 @endpush
 
 @push('script')
-<script src="{{ asset('assets/admin/js/modul/pengaturan/all.js') }}"></script>
+<script src="{{ asset('assets/js/all.js') }}"></script>
 @endpush
 
 @section('content')

@@ -67,5 +67,3 @@
             </button>
         </div>
     </form>
-</div>
-<script src="{{ asset('assets/js/all.js') }}"></script>
