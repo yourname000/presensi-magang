@@ -19,7 +19,7 @@ class DashboardController extends Controller
     {
         // PARAMETER
         $prefix = config('session.prefix');
-        $id_role = session($prefix.'_id_role');
+        $peran = session($prefix.'_peran');
         $id_user = session($prefix.'_id_user');
 
         // SET TITLE

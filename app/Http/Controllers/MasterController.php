@@ -13,6 +13,17 @@ use App\Models\Departemen;
 
 class MasterController extends Controller
 {
+
+    public function __construct()
+    {
+        // cek peran user
+        $prefix = config('session.prefix');
+        if (session($prefix . '_peran') != 1) {
+            redirect()->route('dashboard')->send(); 
+            // pakai send() supaya langsung berhenti eksekusi constructor
+        }
+    }
+    
     // GET VIEW
     public function karyawan(Request $request)
     {
@@ -184,7 +195,7 @@ class MasterController extends Controller
 
     // ---
     // DEPARTEMEN
-    // ---
+    // Tambah Departemen
     public function insert_departemen(Request $request){
         $request->validate([
             'nama' => 'required',
@@ -208,6 +219,7 @@ class MasterController extends Controller
         return redirect()->route('master.departemen');
     }
 
+    // Edit Departemen
     public function update_departemen(Request $request)
     {
         $request->validate([
@@ -234,6 +246,7 @@ class MasterController extends Controller
         return redirect()->route('master.departemen');
     }
 
+    // Hapus Departemen
     public function delete_departemen(Request $request)
     {
         try {

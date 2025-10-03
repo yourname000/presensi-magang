@@ -35,10 +35,14 @@ Route::middleware(DashboardMiddleware::class)->group(function () {
         // GET
         Route::get('/dashboard', 'index')->name('dashboard');
         Route::get('/profile', 'profile')->name('profile');
+
+        // POST
+        Route::post('/absen-location','absenLocation')->name('absen.location');
     });
 
     // MASTER CONTROLLER
     Route::controller(MasterController::class)->group(function () {
+
         // GET
         Route::get('/master/karyawan', 'karyawan')->name('master.karyawan');
         Route::get('/master/departemen', 'departemen')->name('master.departemen');
@@ -47,11 +51,7 @@ Route::middleware(DashboardMiddleware::class)->group(function () {
         // DEPARTEMEN
         Route::post('/master/departemen/insert', 'insert_departemen')->name('master.departemen.insert');
         Route::post('/master/departemen/update', 'update_departemen')->name('master.departemen.update');
-        // Rute untuk "delete" tetap POST untuk konsistensi dengan form
         Route::post('/master/departemen/delete', 'delete_departemen')->name('master.departemen.delete'); 
-
-        // Rute berikut dihapus karena tidak lagi diperlukan
-        // Route::post('/master/departemen/get', 'get_departemen')->name('get.departemen');
 
         // KARYAWAN
         Route::post('/master/karyawan/update', 'update_user')->name('master.karyawan.update');
@@ -62,24 +62,45 @@ Route::middleware(DashboardMiddleware::class)->group(function () {
 
     // PRESENSI CONTROLLER
     Route::controller(PresensiController::class)->group(function () {
+
         // GET
         Route::get('/jenis/perizinan', 'jenis')->name('presensi.jenis');
+        Route::get('/perizinan', 'izin')->name('presensi.izin');
+        Route::get('/laporan/presensi', 'report')->name('presensi.report');
+        Route::get('/presensi/foto', 'gallery')->name('presensi.foto');
 
         // POST
         // JENIS
         Route::post('/presensi/jenis/update', 'update_jenis')->name('update.jenis');
         Route::post('/presensi/jenis/insert', 'insert_jenis')->name('insert.jenis');
+
+        // IZIN
+        Route::post('/presensi/izin/update', 'update_izin')->name('update.izin');
+        Route::post('/presensi/izin/insert', 'insert_izin')->name('insert.izin');
+        Route::post('/search-employee','search_employee')->name('search.employee');
+        Route::post('/single-izin','single_izin')->name('single.izin');
+
+        // PRESENSI
+        Route::post('/presensi/update', 'update_presensi')->name('update.presensi');
+        Route::post('/card-image', 'card_image')->name('card.image');
+        Route::post('/single-presensi','single_presensi')->name('single.presensi');
+        Route::post('/export-presensi','export_presensi')->name('export.presensi');
+        Route::post('/delete-pic','delete_pic')->name('delete.pic');
+
+
     });
 
-    // DATATABLE
+     // DATATABLE
     Route::controller(TableManagement::class)->group(function () {
         // MASTER
-        // Rute berikut dihapus karena tidak lagi menggunakan DataTables berbasis AJAX
-        // Route::post('table/departemen', 'table_departemen')->name('table.departemen'); 
+        Route::post('table/departemen', 'table_departemen')->name('table.departemen');
         Route::post('table/karyawan', 'table_karyawan')->name('table.karyawan');
         // PRESENSI
         Route::post('table/jenis', 'table_jenis')->name('table.jenis');
+        Route::post('table/izin', 'table_izin')->name('table.izin');
+        Route::post('table/presensi', 'table_presensi')->name('table.presensi');
     });
+
 
     // SETTING CONTROLLER
     Route::controller(SettingController::class)->group(function(){
@@ -100,7 +121,10 @@ Route::middleware(DashboardMiddleware::class)->group(function () {
         Route::post('/single/{db?}/{id?}', 'single');
         Route::post('/allDelete/{db?}/{id?}', 'allDelete');
     });
+
+
 });
+
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/logout', [AuthController::class, 'logout'])->name('logout');

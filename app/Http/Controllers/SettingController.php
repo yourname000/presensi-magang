@@ -14,6 +14,16 @@ use App\Models\Shift;
 
 class SettingController extends Controller
 {
+    public function __construct()
+    {
+        // cek peran user
+        $prefix = config('session.prefix');
+        if (session($prefix . '_peran') != 1) {
+            redirect()->route('dashboard')->send(); 
+            // pakai send() supaya langsung berhenti eksekusi constructor
+        }
+    }
+
     public function index(Request $request)
     {
         $page = $request->query('page', '');

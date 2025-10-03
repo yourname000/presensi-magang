@@ -22,13 +22,13 @@ class AuthMiddleware
         // Cek session manual
         $prefix = config('session.prefix', 'app');
         $id_user = Session::get("{$prefix}_id_user");
-        $id_role = Session::get("{$prefix}_id_role");
+        $peran = Session::get("{$prefix}_peran");
         
         // Cek apakah sedang mengakses halaman login
         $isLoginPage = $request->is('login') || $request->is('login-proses') || $request->is('/');
         
         // Jika user sudah login
-        if ($id_user && $id_role) {
+        if ($id_user && $peran) {
             // Jika sudah login tapi akses halaman login, redirect ke dashboard
             if ($isLoginPage) {
                 return redirect('/dashboard');

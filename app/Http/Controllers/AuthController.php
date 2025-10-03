@@ -46,9 +46,9 @@ class AuthController extends Controller
         // Login berhasil - set session manual saja
         $prefix = config('session.prefix', 'app');
         Session::put("{$prefix}_id_user", $user->id_user);
-        Session::put("{$prefix}_id_role", $user->peran);
-        Session::put("{$prefix}_username", $user->username);
+        Session::put("{$prefix}_peran", $user->peran);
         Session::put("{$prefix}_nama", $user->nama);
+        Session::put("{$prefix}_username", $user->username);
         
         // Regenerate session untuk keamanan
         $request->session()->regenerate();
@@ -63,9 +63,9 @@ class AuthController extends Controller
         // Hapus session manual
         $prefix = config('session.prefix', 'app');
         Session::forget("{$prefix}_id_user");
-        Session::forget("{$prefix}_id_role");
-        Session::forget("{$prefix}_username");
+        Session::forget("{$prefix}_peran");
         Session::forget("{$prefix}_nama");
+        Session::forget("{$prefix}_username");
         
         $request->session()->invalidate();
         $request->session()->regenerateToken();
