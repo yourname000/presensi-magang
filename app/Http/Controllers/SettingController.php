@@ -206,94 +206,71 @@ class SettingController extends Controller
         }
     }
 
-    public function updateShift(Request $request)
+    // ---PENGATURAN SHIFT---
+    // Tambah Shift
+    public function insert_shift(Request $request)
     {
-        $arrVar = [
-            'kode'       => 'Kode Shift',
-            'nama'       => 'Nama Shift',
-            'jam_masuk'  => 'Jam Masuk',
-            'jam_pulang' => 'Jam Pulang',
-            'lembur'     => 'Batas Lembur'
-        ];
-
-        $data = [];
-        $arrAccess = [];
-
-        // ========================
-        // VALIDASI ADD SHIFT BARU
-        // ========================
-        if ($request->has('kode')) {
-            $insertData = [];
-            foreach ($request->kode as $i => $kode) {
-                $rowAccess = true;
-                $row = [];
-                foreach ($arrVar as $var => $label) {
-                    $value = $request->{$var}[$i] ?? null;
-                    if (!$value && $var !== 'lembur') { // lembur boleh kosong
-                        $data['required'][] = ['req_' . $var . '_' . $i, "$label tidak boleh kosong!"];
-                        $rowAccess = false;
-                    } else {
-                        $row[$var] = $value;
-                    }
-                }
-                if ($rowAccess) {
-                    $insertData[] = $row;
-                }
-                $arrAccess[] = $rowAccess;
-            }
-            if (!in_array(false, $arrAccess) && count($insertData) > 0) {
-                Shift::insert($insertData);
-            }
-        }
-
-        // ========================
-        // VALIDASI EDIT SHIFT
-        // ========================
-        $editData = [];
-        if ($request->has('edit_kode')) {
-            foreach ($request->edit_kode as $id_shift => $kode) {
-                $rowAccess = true;
-                $row = ['id_shift' => $id_shift];
-                foreach ($arrVar as $var => $label) {
-                    $editName = 'edit_' . $var;
-                    $value = $request->{$editName}[$id_shift] ?? null;
-                    if (!$value && $var !== 'lembur') {
-                        $data['required'][] = ['req_' . $var . '_' . $id_shift, "$label tidak boleh kosong!"];
-                        $rowAccess = false;
-                    } else {
-                        $row[$var] = $value;
-                    }
-                }
-                if ($rowAccess) {
-                    $editData[] = $row;
-                }
-                $arrAccess[] = $rowAccess;
-            }
-
-            // Update batch
-            if (!in_array(false, $arrAccess) && count($editData) > 0) {
-                foreach ($editData as $row) {
-                    Shift::where('id_shift', $row['id_shift'])->update([
-                        'kode'       => $row['kode'],
-                        'nama'       => $row['nama'],
-                        'jam_masuk'  => $row['jam_masuk'],
-                        'jam_pulang' => $row['jam_pulang'],
-                        'lembur'     => $row['lembur'],
-                    ]);
-                }
-            }
-        }
-
-        if (in_array(false, $arrAccess)) {
-            return response()->json(['status' => false, 'required' => $data['required']]);
-        }
-
-        return response()->json([
-            'status' => true,
-            'alert' => ['message' => 'Data Shift berhasil disimpan!'],
-            'reload' => true
+        $request->validate([
+            'kode.*'      => 'required|string|max:10',
+            'nama.*'      => 'required|string|max:100',
+            'jam_masuk.*' => 'required',
+            'jam_pulang.*'=> 'required',
+            'lembur.*'    => 'nullable|integer',
         ]);
+
+        if ($request->has('kode')) {
+            foreach ($request->kode as $i => $kode) {
+                \DB::table('shift')->insert([
+                    'kode'       => $kode,
+                    'nama'       => $request->nama[$i],
+                    'jam_masuk'  => $request->jam_masuk[$i],
+                    'jam_pulang' => $request->jam_pulang[$i],
+                    'lembur'     => $request->lembur[$i] ?? 0,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        }
+
+        return redirect()->back()->with('success', 'Shift baru berhasil ditambahkan.');
     }
+
+    // Edit Shift
+    // UPDATE SHIFT LAMA
+    public function update_shift(Request $request)
+    {
+        $request->validate([
+            'edit_kode.*'       => 'required|string|max:10',
+            'edit_nama.*'       => 'required|string|max:100',
+            'edit_jam_masuk.*'  => 'required',
+            'edit_jam_pulang.*' => 'required',
+            'edit_lembur.*'     => 'nullable|integer',
+        ]);
+
+        if ($request->has('edit_kode')) {
+            foreach ($request->edit_kode as $id => $kode) {
+                \DB::table('shift')->where('id_shift', $id)->update([
+                    'kode'       => $kode,
+                    'nama'       => $request->edit_nama[$id],
+                    'jam_masuk'  => $request->edit_jam_masuk[$id],
+                    'jam_pulang' => $request->edit_jam_pulang[$id],
+                    'lembur'     => $request->edit_lembur[$id] ?? 0,
+                    'updated_at' => now()
+                ]);
+            }
+        }
+
+        return redirect()->back()->with('success', 'Shift berhasil diperbarui.');
+    }
+
+    // Hapus Shift
+    public function delete_shift($id)
+    {
+        \DB::table('shift')->where('id_shift', $id)->delete();
+        return redirect()->back()->with('success', 'Shift berhasil dihapus.');
+    }
+
+
 
 
     // GLOBAL

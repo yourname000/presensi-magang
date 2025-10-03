@@ -1,5 +1,6 @@
 <div class="card p-5 mt-5"> 
-    <form id="form_shift" class="form" action="{{ route('setup.shift') }}" method="POST" enctype="multipart/form-data">
+    {{-- FORM UNTUK UPDATE SHIFT --}}
+    <form id="form_shift_update" class="form" action="{{ route('setup.shift.update') }}" method="POST">
         @csrf 
         
         {{-- Kondisi kosong --}}
@@ -25,10 +26,11 @@
                             <input type="text" name="edit_nama[{{ $row->id_shift }}]" class="form-control"
                                 value="{{ $row->nama }}" placeholder="Contoh : Office" autocomplete="off" />
                         </div>
-                        <button type="button" onclick="hapus_data(this,event,{{ $row->id_shift }},'shift','id_shift')" 
-                                class="btn btn-danger ms-2 align-self-end">
+                        <a href="{{ route('setup.shift.delete',$row->id_shift) }}" 
+                           class="btn btn-danger ms-2 align-self-end"
+                           onclick="return confirm('Yakin ingin menghapus shift ini?')">
                             <i class="fa fa-trash"></i>
-                        </button>
+                        </a>
                     </div>
                 </div>
                 <div class="row">
@@ -52,18 +54,28 @@
             @endforeach
         </div>
 
-        {{-- Shift baru dari JS --}}
-        <div id="data_add_shift"></div>
-
-        {{-- Tombol aksi --}}
-        <div class="w-100 d-flex justify-content-center align-items-center pt-4">
-            <button type="button" id="plus_shift" onclick="addShift()" class="btn btn-success me-3">
-                + Tambah
-            </button>
-            <button type="button" id="submit_shift" data-loader="big" 
-                onclick="submit_form(this,'#form_shift')" 
-                class="btn btn-warning {{ ($shift->isEmpty()) ? 'd-none' : '' }}">
-                Simpan
+        {{-- Tombol Simpan untuk Update --}}
+        <div class="w-100 d-flex justify-content-center align-items-center pt-4 {{ ($shift->isEmpty()) ? 'd-none' : '' }}">
+            <button type="submit" class="btn btn-warning">
+                Simpan Perubahan
             </button>
         </div>
     </form>
+
+    {{-- FORM UNTUK TAMBAH SHIFT --}}
+    <form id="form_shift_insert" class="form mt-5" action="{{ route('setup.shift.insert') }}" method="POST">
+        @csrf
+        <div id="data_add_shift"></div>
+
+        {{-- Tombol Tambah --}}
+        <div class="w-100 d-flex justify-content-center align-items-center pt-4">
+            <button type="button" id="plus_shift" onclick="addShift()" class="btn btn-success me-3">
+                + Tambah Shift
+            </button>
+            <button type="submit" id="submit_shift" class="btn btn-primary d-none">
+                Simpan Shift Baru
+            </button>
+        </div>
+    </form>
+</div>
+
