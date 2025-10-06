@@ -1,32 +1,25 @@
 <div class="card p-5 mt-5"> 
-    {{-- FORM UNTUK UPDATE SHIFT --}}
-    <form id="form_shift_update" class="form" action="{{ route('setup.shift.update') }}" method="POST">
+    <form id="form_shift_save" class="form" action="{{ route('setup.shift.save') }}" method="POST">
         @csrf 
         
-        {{-- Kondisi kosong --}}
-        <div id="no_data_vector" class="w-100 d-flex {{ ($shift->isNotEmpty()) ? 'd-none' : '' }} justify-content-center align-items-center flex-column py-5">
-            <div class="background-partisi-contain" style="background-image:url('{{ image_check('empty.svg','default') }}');width:300px;height:250px;"></div>
-            <h3 class="text-center text-info fs-3">Tidak Ada Data</h3>
-            <p class="text-muted">Belum ada data shift! Silahkan tambahkan data shift terlebih dahulu</p>
-        </div>
-
-        {{-- Daftar Shift lama --}}
+        {{-- Data Shift Lama --}}
         <div id="data_shift" class="{{ ($shift->isEmpty()) ? 'd-none' : '' }}">
-            @foreach($shift as $row)
-            <div class="p-4 mb-4 bg-light rounded-4 shadow-sm">
+            @foreach($shift as $i => $row)
+            <div class="p-4 mb-4 bg-light rounded-4 shadow-sm shift-box">
+                <input type="hidden" name="id[{{ $i }}]" value="{{ $row->id_shift }}">
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label required">Kode Shift</label>
-                        <input type="text" name="edit_kode[{{ $row->id_shift }}]" class="form-control"
+                        <input type="text" name="kode[{{ $i }}]" class="form-control"
                             value="{{ $row->kode }}" placeholder="Contoh : O" autocomplete="off" />
                     </div>
                     <div class="col-md-6 mb-3 d-flex">
                         <div class="flex-grow-1">
                             <label class="form-label required">Nama Shift</label>
-                            <input type="text" name="edit_nama[{{ $row->id_shift }}]" class="form-control"
+                            <input type="text" name="nama[{{ $i }}]" class="form-control"
                                 value="{{ $row->nama }}" placeholder="Contoh : Office" autocomplete="off" />
                         </div>
-                        <a href="{{ route('setup.shift.delete',$row->id_shift) }}" 
+                        <a href="{{ route('setup.shift.delete', $row->id_shift) }}" 
                            class="btn btn-danger ms-2 align-self-end"
                            onclick="return confirm('Yakin ingin menghapus shift ini?')">
                             <i class="fa fa-trash"></i>
@@ -36,17 +29,17 @@
                 <div class="row">
                     <div class="col-md-4 mb-3">
                         <label class="form-label required">Jam Masuk</label>
-                        <input type="time" name="edit_jam_masuk[{{ $row->id_shift }}]" class="form-control"
+                        <input type="time" name="jam_masuk[{{ $i }}]" class="form-control"
                             value="{{ date('H:i',strtotime($row->jam_masuk)) }}" />
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label required">Jam Pulang</label>
-                        <input type="time" name="edit_jam_pulang[{{ $row->id_shift }}]" class="form-control"
+                        <input type="time" name="jam_pulang[{{ $i }}]" class="form-control"
                             value="{{ date('H:i',strtotime($row->jam_pulang)) }}" />
                     </div>
                     <div class="col-md-4 mb-3">
                         <label class="form-label">Batas Lembur (Menit)</label>
-                        <input type="number" name="edit_lembur[{{ $row->id_shift }}]" class="form-control"
+                        <input type="number" name="lembur[{{ $i }}]" class="form-control"
                             value="{{ $row->lembur }}" placeholder="-" />
                     </div>
                 </div>
@@ -54,28 +47,24 @@
             @endforeach
         </div>
 
-        {{-- Tombol Simpan untuk Update --}}
-        <div class="w-100 d-flex justify-content-center align-items-center pt-4 {{ ($shift->isEmpty()) ? 'd-none' : '' }}">
-            <button type="submit" class="btn btn-warning">
-                Simpan Perubahan
-            </button>
-        </div>
-    </form>
-
-    {{-- FORM UNTUK TAMBAH SHIFT --}}
-    <form id="form_shift_insert" class="form mt-5" action="{{ route('setup.shift.insert') }}" method="POST">
-        @csrf
+        {{-- Data Shift Baru --}}
         <div id="data_add_shift"></div>
 
-        {{-- Tombol Tambah --}}
+        {{-- Kondisi Kosong --}}
+        <div id="no_data_vector" class="w-100 d-flex {{ ($shift->isNotEmpty()) ? 'd-none' : '' }} justify-content-center align-items-center flex-column py-5">
+            <div class="background-partisi-contain" style="background-image:url('{{ image_check('empty.svg','default') }}');width:300px;height:250px;"></div>
+            <h3 class="text-center text-info fs-3">Tidak Ada Data</h3>
+            <p class="text-muted">Belum ada data shift! Silahkan tambahkan data shift terlebih dahulu</p>
+        </div>
+
+        {{-- Tombol --}}
         <div class="w-100 d-flex justify-content-center align-items-center pt-4">
             <button type="button" id="plus_shift" onclick="addShift()" class="btn btn-success me-3">
                 + Tambah Shift
             </button>
-            <button type="submit" id="submit_shift" class="btn btn-primary d-none">
-                Simpan Shift Baru
+            <button type="submit" id="submit_shift" class="btn btn-primary">
+                Simpan
             </button>
         </div>
     </form>
 </div>
-

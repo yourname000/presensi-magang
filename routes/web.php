@@ -112,8 +112,7 @@ Route::middleware(DashboardMiddleware::class)->group(function () {
         Route::post('/setting/lokasi', 'updateLocation')->name('setup.location');
         
         // SHIFT
-        Route::post('/setting/shift/insert', 'insert_shift')->name('setup.shift.insert');
-        Route::post('/setting/shift/update', 'update_shift')->name('setup.shift.update');
+        Route::post('/setting/shift/insert', 'update_shift')->name('setup.shift.save');
         Route::get('/setting/shift/delete/{id}', 'delete_shift')->name('setup.shift.delete');
 
         Route::post('/setting/sosmed', 'setupSosmed')->name('setting.sosmed');

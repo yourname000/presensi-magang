@@ -207,60 +207,36 @@ class SettingController extends Controller
     }
 
     // ---PENGATURAN SHIFT---
-    // Tambah Shift
-    public function insert_shift(Request $request)
+    public function update_shift(Request $request)
     {
-        $request->validate([
-            'kode.*'      => 'required|string|max:10',
-            'nama.*'      => 'required|string|max:100',
-            'jam_masuk.*' => 'required',
-            'jam_pulang.*'=> 'required',
-            'lembur.*'    => 'nullable|integer',
-        ]);
+        foreach ($request->kode as $i => $kode) {
+            $id = $request->id[$i] ?? null;
 
-        if ($request->has('kode')) {
-            foreach ($request->kode as $i => $kode) {
-                \DB::table('shift')->insert([
+            if ($id) {
+                // Update shift lama
+                $shift = Shift::find($id);
+                if ($shift) {
+                    $shift->update([
+                        'kode'       => $kode,
+                        'nama'       => $request->nama[$i],
+                        'jam_masuk'  => $request->jam_masuk[$i],
+                        'jam_pulang' => $request->jam_pulang[$i],
+                        'lembur'     => $request->lembur[$i],
+                    ]);
+                }
+            } else {
+                // Insert shift baru
+                Shift::create([
                     'kode'       => $kode,
                     'nama'       => $request->nama[$i],
                     'jam_masuk'  => $request->jam_masuk[$i],
                     'jam_pulang' => $request->jam_pulang[$i],
-                    'lembur'     => $request->lembur[$i] ?? 0,
-                    'created_at' => now(),
-                    'updated_at' => now(),
+                    'lembur'     => $request->lembur[$i],
                 ]);
             }
         }
 
-        return redirect()->back()->with('success', 'Shift baru berhasil ditambahkan.');
-    }
-
-    // Edit Shift
-    // UPDATE SHIFT LAMA
-    public function update_shift(Request $request)
-    {
-        $request->validate([
-            'edit_kode.*'       => 'required|string|max:10',
-            'edit_nama.*'       => 'required|string|max:100',
-            'edit_jam_masuk.*'  => 'required',
-            'edit_jam_pulang.*' => 'required',
-            'edit_lembur.*'     => 'nullable|integer',
-        ]);
-
-        if ($request->has('edit_kode')) {
-            foreach ($request->edit_kode as $id => $kode) {
-                \DB::table('shift')->where('id_shift', $id)->update([
-                    'kode'       => $kode,
-                    'nama'       => $request->edit_nama[$id],
-                    'jam_masuk'  => $request->edit_jam_masuk[$id],
-                    'jam_pulang' => $request->edit_jam_pulang[$id],
-                    'lembur'     => $request->edit_lembur[$id] ?? 0,
-                    'updated_at' => now()
-                ]);
-            }
-        }
-
-        return redirect()->back()->with('success', 'Shift berhasil diperbarui.');
+        return redirect()->back()->with('success', 'Shift berhasil disimpan!');
     }
 
     // Hapus Shift
