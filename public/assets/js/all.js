@@ -2,7 +2,12 @@ function addShift() {
     $('#no_data_vector').addClass('d-none');
     $('#submit_shift').removeClass('d-none');
 
-    let num = $('#data_add_shift').children('.shift-box').length;
+    // Ambil jumlah data lama (shift yang sudah ada di database)
+    let oldCount = $('#data_shift .shift-box').length;
+    // Ambil jumlah data baru (yang ditambahkan lewat tombol)
+    let newCount = $('#data_add_shift').children('.shift-box').length;
+    // Gabungkan keduanya, jadi index baru lanjut dari data lama
+    let num = oldCount + newCount;
 
     let html = `
     <div id="pane_add_${num}" class="shift-box p-4 mb-4 bg-light rounded-4 shadow-sm">
