@@ -247,8 +247,6 @@ class SettingController extends Controller
     }
 
 
-
-
     // GLOBAL
 
     public function switch(Request $request, $db = 'user')
