@@ -11,6 +11,9 @@
         font-size: 17px;
         color: #333;
     }
+    .pengaturan-card {
+    margin-top: 30px;
+    }
 </style>
 @endpush
 
@@ -19,13 +22,13 @@
 @endpush
 
 @section('content')
-<div class="container-fluid">
+<div class="container-fluid p-0">
     @include('partials.admin.heading')
 
-    <div class="row mb-4 mt-4">
+    <div class="row mb-4">
         <div class="col-lg-10 mx-auto">
             {{-- Card --}}
-            <div class="card">
+            <div class="card pengaturan-card">
                 <div class="card-body">
                     <!-- Tab Header -->
                     <ul class="nav nav-tabs" id="pengaturanTab" role="tablist">

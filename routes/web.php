@@ -108,7 +108,7 @@ Route::middleware(DashboardMiddleware::class)->group(function () {
         Route::get('/pengaturan', 'index')->name('pengaturan');
 
         // POST
-        Route::post('/setting/website', 'updateWebsite')->name('setting.website');
+        Route::post('/setting/website', 'update_website')->name('setting.website');
         Route::post('/setting/lokasi', 'updateLocation')->name('setup.location');
         
         // SHIFT

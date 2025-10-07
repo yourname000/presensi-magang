@@ -51,103 +51,76 @@ class SettingController extends Controller
 
     // FUNCTION
 
-    public function updateWebsite(Request $request)
-    {
-        $setting = Pengaturan::find(1);
+    public function update_website(Request $request)
+{
+    $setting = Pengaturan::find(1);
 
-        $arrVar['meta_title'] = 'Judul website';
+    // Validasi input
+    $request->validate([
+        'meta_title' => 'required|string|max:255',
+        'logo' => 'nullable|file|mimes:png,jpg,jpeg|max:2048',
+        'icon' => 'nullable|file|mimes:png,jpg,jpeg,ico|max:2048',
+    ], [
+        'meta_title.required' => 'Judul website tidak boleh kosong.',
+        'logo.mimes' => 'Logo harus berformat png/jpg/jpeg.',
+        'icon.mimes' => 'Icon harus berformat png/jpg/jpeg/ico.',
+    ]);
 
-        $post = [];
-        $arrAccess = [];
-        $data = [];
+    $post = [];
 
-        foreach ($arrVar as $var => $value) {
-            $$var = $request->input($var);
-            if (!$$var && $$var !== '0') {
-                $data['required'][] = ['req_' . $var, "$value tidak boleh kosong!"];
-                $arrAccess[] = false;
-            } else {
-                $arrAccess[] = true;
-            }
-        }
-
-        if (in_array(false, $arrAccess)) {
-            return response()->json(['status' => false, 'required' => $data['required']]);
-        }
-
-        $tujuan = public_path('data/setting');
-        if (!file_exists($tujuan)) {
-            mkdir($tujuan, 0755, true);
-        }
-
-        if ($meta_title != $setting->meta_title) {
-            $post['meta_title'] = $meta_title;
-        }
-
-        // Validasi minimal salah satu file/logo tersedia
-        $name_icon = $request->input('name_icon', '');
-        $name_logo = $request->input('name_logo', '');
-
-        $arrAccess[] = $request->hasFile('logo') || $name_logo || $setting->logo;
-        $arrAccess[] = $request->hasFile('icon') || $name_icon || $setting->icon;
-
-        if (in_array(true, $arrAccess)) {
-
-            // LOGO
-            if ($request->hasFile('logo')) {
-                $file = $request->file('logo');
-                $nama = uniqid() . '.' . $file->getClientOriginalExtension();
-                $file->move($tujuan, $nama);
-                $post['logo'] = $nama;
-                if ($name_logo && file_exists($tujuan . '/' . $name_logo)) {
-                    unlink($tujuan . '/' . $name_logo);
-                }
-            } elseif (!$name_logo && $setting->logo && file_exists($tujuan . '/' . $setting->logo)) {
-                unlink($tujuan . '/' . $setting->logo);
-                $post['logo'] = '';
-            }
-
-            // ICON
-            if ($request->hasFile('icon')) {
-                $file = $request->file('icon');
-                $nama = uniqid() . '.' . $file->getClientOriginalExtension();
-                $file->move($tujuan, $nama);
-                $post['icon'] = $nama;
-                if ($name_icon && file_exists($tujuan . '/' . $name_icon)) {
-                    unlink($tujuan . '/' . $name_icon);
-                }
-            } elseif (!$name_icon && $setting->icon && file_exists($tujuan . '/' . $setting->icon)) {
-                unlink($tujuan . '/' . $setting->icon);
-                $post['icon'] = '';
-            }
-
-            if (count($post) > 0) {
-                $updated = $setting->update($post);
-                if ($updated) {
-                    return response()->json([
-                        'status' => true,
-                        'alert' => ['message' => 'Pengaturan Website Berhasil Disimpan'],
-                        'reload' => true
-                    ]);
-                } else {
-                    return response()->json([
-                        'status' => false,
-                        'alert' => ['message' => 'Pengaturan Website Gagal Disimpan']
-                    ]);
-                }
-            }
-
-            return response()->json([
-                'status' => false,
-                'alert' => ['message' => 'Tidak ada data di rubah']
-            ]);
-        }
-
-        return response()->json([
-            'status' => false,
-            'alert' => ['message' => 'Tidak ada data di rubah']
-        ]);
+    // Update judul website bila berubah
+    if ($request->meta_title !== $setting->meta_title) {
+        $post['meta_title'] = $request->meta_title;
     }
+
+    // Pastikan folder tujuan ada
+    $tujuan = public_path('data/setting');
+    if (!file_exists($tujuan)) {
+        mkdir($tujuan, 0755, true);
+    }
+
+    // === Upload Logo ===
+    if ($request->hasFile('logo')) {
+        $file = $request->file('logo');
+        if ($file->isValid()) {
+            $namaLogo = uniqid('logo_') . '.' . $file->getClientOriginalExtension();
+            $file->move($tujuan, $namaLogo);
+
+            // Simpan nama lama sebagai riwayat
+            if ($setting->logo && file_exists($tujuan . '/' . $setting->logo)) {
+                rename($tujuan . '/' . $setting->logo, $tujuan . '/old_' . $setting->logo);
+            }
+
+            $post['logo'] = $namaLogo;
+        }
+    }
+
+    // === Upload Icon ===
+    if ($request->hasFile('icon')) {
+        $file = $request->file('icon');
+        if ($file->isValid()) {
+            $namaIcon = uniqid('icon_') . '.' . $file->getClientOriginalExtension();
+            $file->move($tujuan, $namaIcon);
+
+            // Simpan nama lama sebagai riwayat
+            if ($setting->icon && file_exists($tujuan . '/' . $setting->icon)) {
+                rename($tujuan . '/' . $setting->icon, $tujuan . '/old_' . $setting->icon);
+            }
+
+            $post['icon'] = $namaIcon;
+        }
+    }
+
+    // Simpan perubahan
+    if (count($post) > 0) {
+        $setting->update($post);
+        return redirect()->route('pengaturan', ['page' => 'website'])->with('success', 'Pengaturan Website berhasil disimpan!');
+    }
+
+    return redirect()->back()->with('info', 'Tidak ada perubahan yang disimpan.');
+}
+
+
 
     public function updateLocation(Request $request)
     {
@@ -236,7 +209,8 @@ class SettingController extends Controller
             }
         }
 
-        return redirect()->back()->with('success', 'Shift berhasil disimpan!');
+        return redirect()->route('pengaturan', ['page' => 'shift'])->with('success', 'Shift berhasil disimpan!');
+
     }
 
     // Hapus Shift

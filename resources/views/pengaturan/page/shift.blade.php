@@ -1,6 +1,15 @@
 <div class="card p-5 mt-5"> 
     <form id="form_shift_save" class="form" action="{{ route('setup.shift.save') }}" method="POST">
-        @csrf 
+        @csrf
+        
+        {{-- Alert --}}
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fa-solid fa-circle-check me-2"></i>
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
         
         {{-- Data Shift Lama --}}
         <div id="data_shift" class="{{ ($shift->isEmpty()) ? 'd-none' : '' }}">
