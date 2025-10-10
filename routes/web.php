@@ -109,7 +109,7 @@ Route::middleware(DashboardMiddleware::class)->group(function () {
 
         // POST
         Route::post('/setting/website', 'update_website')->name('setting.website');
-        Route::post('/setting/lokasi', 'updateLocation')->name('setup.location');
+        Route::post('/setting/lokasi', 'update_location')->name('setup.location');
         
         // SHIFT
         Route::post('/setting/shift/insert', 'update_shift')->name('setup.shift.save');

@@ -52,132 +52,111 @@ class SettingController extends Controller
     // FUNCTION
 
     public function update_website(Request $request)
-{
-    $setting = Pengaturan::find(1);
-
-    // Validasi input
-    $request->validate([
-        'meta_title' => 'required|string|max:255',
-        'logo' => 'nullable|file|mimes:png,jpg,jpeg|max:2048',
-        'icon' => 'nullable|file|mimes:png,jpg,jpeg,ico|max:2048',
-    ], [
-        'meta_title.required' => 'Judul website tidak boleh kosong.',
-        'logo.mimes' => 'Logo harus berformat png/jpg/jpeg.',
-        'icon.mimes' => 'Icon harus berformat png/jpg/jpeg/ico.',
-    ]);
-
-    $post = [];
-
-    // Update judul website bila berubah
-    if ($request->meta_title !== $setting->meta_title) {
-        $post['meta_title'] = $request->meta_title;
-    }
-
-    // Pastikan folder tujuan ada
-    $tujuan = public_path('data/setting');
-    if (!file_exists($tujuan)) {
-        mkdir($tujuan, 0755, true);
-    }
-
-    // === Upload Logo ===
-    if ($request->hasFile('logo')) {
-        $file = $request->file('logo');
-        if ($file->isValid()) {
-            $namaLogo = uniqid('logo_') . '.' . $file->getClientOriginalExtension();
-            $file->move($tujuan, $namaLogo);
-
-            // Simpan nama lama sebagai riwayat
-            if ($setting->logo && file_exists($tujuan . '/' . $setting->logo)) {
-                rename($tujuan . '/' . $setting->logo, $tujuan . '/old_' . $setting->logo);
-            }
-
-            $post['logo'] = $namaLogo;
-        }
-    }
-
-    // === Upload Icon ===
-    if ($request->hasFile('icon')) {
-        $file = $request->file('icon');
-        if ($file->isValid()) {
-            $namaIcon = uniqid('icon_') . '.' . $file->getClientOriginalExtension();
-            $file->move($tujuan, $namaIcon);
-
-            // Simpan nama lama sebagai riwayat
-            if ($setting->icon && file_exists($tujuan . '/' . $setting->icon)) {
-                rename($tujuan . '/' . $setting->icon, $tujuan . '/old_' . $setting->icon);
-            }
-
-            $post['icon'] = $namaIcon;
-        }
-    }
-
-    // Simpan perubahan
-    if (count($post) > 0) {
-        $setting->update($post);
-        return redirect()->route('pengaturan', ['page' => 'website'])->with('success', 'Pengaturan Website berhasil disimpan!');
-    }
-
-    return redirect()->back()->with('info', 'Tidak ada perubahan yang disimpan.');
-}
-
-
-
-    public function updateLocation(Request $request)
     {
         $setting = Pengaturan::find(1);
-        $arrVar['lat'] = 'Latitude';
-        $arrVar['lng'] = 'Longitude';
-        $arrVar['radius'] = 'Radius';
+
+        // Validasi input
+        $request->validate([
+            'meta_title' => 'required|string|max:255',
+            'logo' => 'nullable|file|mimes:png,jpg,jpeg|max:2048',
+            'icon' => 'nullable|file|mimes:png,jpg,jpeg,ico|max:2048',
+        ], [
+            'meta_title.required' => 'Judul website tidak boleh kosong.',
+            'logo.mimes' => 'Logo harus berformat png/jpg/jpeg.',
+            'icon.mimes' => 'Icon harus berformat png/jpg/jpeg/ico.',
+        ]);
 
         $post = [];
-        $arrAccess = [];
-        $data = [];
 
-        foreach ($arrVar as $var => $value) {
-            $$var = $request->input($var);
-            if (!$$var && $$var !== '0') {
-                $data['required'][] = ['req_' . $var, "$value tidak boleh kosong!"];
-                $arrAccess[] = false;
-            } else {
-                $post[$var] = trim($$var);
-                $arrAccess[] = true;
+        // Update judul website bila berubah
+        if ($request->meta_title !== $setting->meta_title) {
+            $post['meta_title'] = $request->meta_title;
+        }
+
+        // Pastikan folder tujuan ada
+        $tujuan = public_path('data/setting');
+        if (!file_exists($tujuan)) {
+            mkdir($tujuan, 0755, true);
+        }
+
+        // === Upload Logo ===
+        if ($request->hasFile('logo')) {
+            $file = $request->file('logo');
+            if ($file->isValid()) {
+                $namaLogo = uniqid('logo_') . '.' . $file->getClientOriginalExtension();
+                $file->move($tujuan, $namaLogo);
+
+                // Simpan nama lama sebagai riwayat
+                if ($setting->logo && file_exists($tujuan . '/' . $setting->logo)) {
+                    rename($tujuan . '/' . $setting->logo, $tujuan . '/old_' . $setting->logo);
+                }
+
+                $post['logo'] = $namaLogo;
             }
         }
 
-        if (in_array(false, $arrAccess)) {
-            return response()->json(['status' => false, 'required' => $data['required']]);
+        // === Upload Icon ===
+        if ($request->hasFile('icon')) {
+            $file = $request->file('icon');
+            if ($file->isValid()) {
+                $namaIcon = uniqid('icon_') . '.' . $file->getClientOriginalExtension();
+                $file->move($tujuan, $namaIcon);
+
+                // Simpan nama lama sebagai riwayat
+                if ($setting->icon && file_exists($tujuan . '/' . $setting->icon)) {
+                    rename($tujuan . '/' . $setting->icon, $tujuan . '/old_' . $setting->icon);
+                }
+
+                $post['icon'] = $namaIcon;
+            }
         }
 
-        // ✅ Validasi tambahan
-        if (!is_numeric($post['lat']) || !is_numeric($post['lng'])) {
-            return response()->json([
-                'status' => false,
-                'alert' => ['message' => 'Latitude dan Longitude harus berupa angka!']
-            ]);
+        // Simpan perubahan
+        if (count($post) > 0) {
+            $setting->update($post);
+            return redirect()->route('pengaturan', ['page' => 'website'])->with('success', 'Pengaturan Website berhasil disimpan!');
         }
 
-        if (!is_numeric($post['radius']) || $post['radius'] < 0) {
-            return response()->json([
-                'status' => false,
-                'alert' => ['message' => 'Radius harus berupa angka dan tidak boleh negatif!']
-            ]);
-        }
-
-        $post['lokasi'] = $request->input('lokasi') ?? '';
-        $insert = $setting->update($post);
-
-        if ($insert) {
-            return response()->json([
-                'status' => true,
-                'alert' => ['message' => 'Data Lokasi Berhasil Disimpan!']
-            ]);
-        } else {
-            return response()->json([
-                'status' => false,
-                'alert' => ['message' => 'Data Lokasi Gagal Disimpan!']
-            ]);
-        }
+        return redirect()->back()->with('info', 'Tidak ada perubahan yang disimpan.');
     }
+
+
+    // ---PENGATURAN LOKASI DAN RADIUS---
+    public function update_location(Request $request)
+    {
+        $request->validate([
+            'lat' => 'required|numeric',
+            'lng' => 'required|numeric',
+            'radius' => 'required|numeric|min:0',
+            'lokasi' => 'nullable|string',
+        ], [
+            'lat.required' => 'Latitude tidak boleh kosong!',
+            'lng.required' => 'Longitude tidak boleh kosong!',
+            'radius.required' => 'Radius tidak boleh kosong!',
+            'radius.numeric' => 'Radius harus berupa angka!',
+            'radius.min' => 'Radius tidak boleh negatif!',
+        ]);
+
+        $setting = Pengaturan::find(1);
+
+        if (!$setting) {
+            return redirect()->back()->with('error', 'Data pengaturan tidak ditemukan!');
+        }
+
+        $update = $setting->update([
+            'lat' => $request->lat,
+            'lng' => $request->lng,
+            'radius' => $request->radius,
+            'lokasi' => $request->lokasi,
+        ]);
+
+        if ($update) {
+            return redirect()->route('pengaturan', ['page' => 'lokasi'])->with('success', 'Data lokasi berhasil disimpan!');
+        }
+
+        return redirect()->route('pengaturan', ['page' => 'lokasi'])->with('error', 'Data lokasi gagal disimpan!');
+    }
+
 
     // ---PENGATURAN SHIFT---
     public function update_shift(Request $request)
