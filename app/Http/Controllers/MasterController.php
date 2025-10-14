@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\File;
 use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\Hash;
+
 
 use App\Models\User;
 use App\Models\Departemen;
@@ -86,7 +86,7 @@ class MasterController extends Controller
         // Aturan validasi
         $rules = [
             'nama' => 'required',
-            'nik' => 'required|numeric|unique:users,nik',
+            'nik' => 'required|unique:users,nik',
             'username' => 'required|unique:users,username|regex:/^\S*$/u',
             'kata_sandi' => 'required',
         ];
@@ -99,7 +99,6 @@ class MasterController extends Controller
         $request->validate($rules, [
             'nama.required' => 'Nama lengkap tidak boleh kosong!',
             'nik.required' => 'NIK tidak boleh kosong!',
-            'nik.numeric' => 'NIK hanya boleh berisi angka!',
             'nik.unique' => 'NIK sudah terdaftar!',
             'username.required' => 'Nama pengguna tidak boleh kosong!',
             'username.unique' => 'Nama pengguna sudah dipakai!',
@@ -109,8 +108,7 @@ class MasterController extends Controller
         ]);
 
         try {
-            $post = $request->except(['_token', 'kata_sandi']);
-            $post['kata_sandi'] = Hash::make($request->kata_sandi);
+            $post = $request->except(['_token']);
             $post['created_by'] = session('app_id_user');
             
             User::create($post);
@@ -127,7 +125,7 @@ class MasterController extends Controller
         // Validasi
         $rules = [
             'nama' => 'required',
-            'nik' => ['required', 'numeric', Rule::unique('users')->ignore($request->id_user, 'id_user')],
+            'nik' => ['required', Rule::unique('users')->ignore($request->id_user, 'id_user')],
             'username' => ['required', Rule::unique('users')->ignore($request->id_user, 'id_user'), 'regex:/^\S*$/u'],
         ];
 
@@ -138,20 +136,18 @@ class MasterController extends Controller
         $request->validate($rules, [
             'nama.required' => 'Nama lengkap tidak boleh kosong!',
             'nik.required' => 'NIK tidak boleh kosong!',
-            'nik.numeric' => 'NIK hanya boleh berisi angka!',
             'nik.unique' => 'NIK sudah terdaftar oleh pengguna lain!',
             'username.required' => 'Nama pengguna tidak boleh kosong!',
             'username.unique' => 'Nama pengguna sudah dipakai oleh pengguna lain!',
             'username.regex' => 'Nama pengguna tidak boleh mengandung spasi!',
             'id_departemen.required' => 'Departemen tidak boleh kosong!',
         ]);
-
         $user = User::findOrFail($request->id_user);
         
         try {
-            $post = $request->except(['_token', 'kata_sandi']);
+            $post = $request->except(['_token']);
             if ($request->filled('kata_sandi')) {
-                $post['kata_sandi'] = Hash::make($request->kata_sandi);
+                 unset($post['kata_sandi']); 
             }
             
             $user->update($post);

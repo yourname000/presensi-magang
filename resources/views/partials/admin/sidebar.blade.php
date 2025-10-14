@@ -34,9 +34,10 @@
                 </a>
             </li>
 
+             <!-- MANAJEMEN ABSENSI -->
             <li class="sidebar-heading">MANAJEMEN ABSENSI</li>
             <li class="nav-item">
-                <a href="#" class="nav-link">
+                <a href="{{ route('presensi.report') }}" class="nav-link {{ ($segment1 == 'laporan' && $segment2 == 'presensi') ? 'active' : '' }}">
                     <i class="fa-solid fa-list-check me-2"></i> Absensi
                 </a>
             </li>
