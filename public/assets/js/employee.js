@@ -1,10 +1,7 @@
-// ==============================
-//  GLOBAL STATE
-// ==============================
 let isScanIn = false;
 
 /* ==========================
-    Clock and Date
+    FUNGSI UPDATE JAM & TANGGAL
 ========================== */
 function updateClock() {
     const now = new Date();
@@ -29,10 +26,11 @@ setInterval(updateClock, 1000);
 updateClock();
 
 /* ==========================
-    LOKASI PRESENSI
+    FUNGSI CEK & AMBIL LOKASI
 ========================== */
-function presensi_location(title) {
-    alert("📍 Memeriksa lokasi...");
+// ✅ Tambahkan parameter `status` agar bisa tahu presensi Masuk / Pulang
+function presensi_location(status) {
+    alert("📍 Memeriksa lokasi Anda...");
 
     if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(
@@ -40,17 +38,21 @@ function presensi_location(title) {
                 let lat = position.coords.latitude;
                 let long = position.coords.longitude;
 
-                // Set hidden input
+                // Masukkan nilai koordinat ke form
                 document.getElementById("inputLatitude").value = lat;
                 document.getElementById("inputLongitude").value = long;
 
+                // ✅ Tambahkan logika untuk isi status otomatis
+                const statusInput = document.getElementById("inputStatus");
+                if (statusInput) {
+                    statusInput.value = status; // "Masuk" atau "Pulang"
+                }
+
                 alert("✅ Lokasi ditemukan. Silakan lanjutkan presensi.");
 
-                // Tampilkan modal
+                // Tampilkan modal form presensi
                 const modalElement = document.getElementById("presensiModal");
-                const modal = new bootstrap.Modal(modalElement, {
-                    backdrop: false
-                });
+                const modal = new bootstrap.Modal(modalElement, { backdrop: false });
                 modal.show();
 
                 $(".modal-backdrop").remove();
@@ -81,25 +83,30 @@ function presensi_location(title) {
 }
 
 /* ==========================
-    KONFIRMASI PRESENSI
+    KONFIRMASI DAN KIRIM FORM
 ========================== */
 function handleKonfirmasi() {
     const lat = document.getElementById("inputLatitude").value;
     const lng = document.getElementById("inputLongitude").value;
+    const status = document.getElementById("inputStatus").value;
 
     if (!lat || !lng) {
         alert("📍 Data lokasi belum tersedia. Klik tombol presensi ulang.");
         return;
     }
 
-    const shiftSelect = document.getElementById("select_id_shift");
-    if (shiftSelect && !shiftSelect.value) {
-        alert("⚠️ Pilih shift terlebih dahulu.");
+    if (!status) {
+        alert("⚠️ Status presensi tidak boleh kosong. Klik tombol presensi ulang.");
         return;
     }
 
-    alert("⏳ Mengirim data presensi...");
+    const shiftSelect = document.getElementById("select_id_shift");
+    if (shiftSelect && !shiftSelect.value) {
+        alert("⚠️ Pilih shift terlebih dahulu sebelum absen.");
+        return;
+    }
 
-    // Submit langsung ke form
-    document.getElementById("form_presensi").submit();
+    if (confirm(`Yakin ingin mengirim data presensi ${status}?`)) {
+        document.getElementById("form_presensi").submit();
+    }
 }

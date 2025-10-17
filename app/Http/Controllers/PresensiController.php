@@ -196,62 +196,49 @@ class PresensiController extends Controller
         return view('presensi.single', compact('presensi', 'user'));
     }
 
-  public function update_presensi(Request $request)
+    public function update_presensi(Request $request)
 {
-    $id_presensi = $request->input('id_presensi');
-    $id_user = $request->input('id_user');
-    $tanggal_presensi = $request->input('tanggal_presensi') ?? now()->toDateString();
-    $status = $request->input('status') ?? 'H'; // default H biar gak kosong
-    $keterangan = $request->input('keterangan') ?? '';
+    $id_user       = $request->input('id_user') ?? session(config('session.prefix').'_id_user');
+    $id_departemen = $request->input('id_departemen');
+    $id_shift      = $request->input('id_shift');
+    $tanggal_presensi = now()->toDateString(); // otomatis tanggal hari ini
 
-    try {
-        // Cari data presensi berdasarkan ID atau user + tanggal
-        $presensi = null;
-
-        if ($id_presensi) {
-            $presensi = Presensi::find($id_presensi);
-        }
-
-        if (!$presensi) {
-            $presensi = Presensi::where('id_user', $id_user)
-                ->whereDate('tanggal_presensi', $tanggal_presensi)
-                ->first();
-        }
-
-        // Jika belum ada → buat baru
-        if (!$presensi) {
-            $presensi = new Presensi();
-            $presensi->id_user = $id_user;
-            $presensi->tanggal_presensi = $tanggal_presensi;
-            $presensi->hadir = $status == 'H' ? 'Y' : 'N';
-        }
-
-        // Update data (baik baru maupun lama)
-        $presensi->id_departemen = $request->input('id_departemen');
-        $presensi->id_shift = $request->input('id_shift');
-        $presensi->scan_in = $request->input('scan_in');
-        $presensi->scan_out = $request->input('scan_out');
-        $presensi->terlambat = $request->input('waktu_terlambat') > 0 ? 'Y' : 'N';
-        $presensi->waktu_terlambat = $request->input('waktu_terlambat') ?? 0;
-        $presensi->status_terlambat = $request->input('status_terlambat') ?? 'N';
-        $presensi->status_pulang_cepat = $request->input('status_pulang_cepat') ?? 'N';
-        $presensi->pulang_cepat = $request->input('pulang_cepat') ?? 0;
-        $presensi->lembur = $request->input('lembur') ?? 0;
-        $presensi->lat_in = $request->input('latitude');
-        $presensi->lng_in = $request->input('longitude');
-        $presensi->keterangan = $keterangan;
-
-        $presensi->save();
-
-        return redirect()
-            ->route('presensi.report')
-            ->with('success', 'Presensi berhasil diperbarui!');
-    } catch (\Exception $e) {
-        // kalau gagal
-        return redirect()
-            ->back()
-            ->with('error', 'Presensi gagal diperbarui! Error: ' . $e->getMessage());
+    // --- VALIDASI ---
+    if (empty($id_user) || empty($id_departemen) || empty($id_shift)) {
+        return redirect()->back()->with('error', 'Data karyawan, departemen, dan shift wajib diisi!');
     }
+
+    // --- CEK APAKAH SUDAH PRESENSI HARI INI ---
+    $presensi = Presensi::where('id_user', $id_user)
+        ->whereDate('tanggal_presensi', $tanggal_presensi)
+        ->first();
+
+    // --- JIKA BELUM PRESENSI (MASUK) ---
+    if (!$presensi) {
+        Presensi::create([
+            'id_user'          => $id_user,
+            'id_departemen'    => $id_departemen,
+            'id_shift'         => $id_shift,
+            'tanggal_presensi' => $tanggal_presensi,
+            'scan_in'          => now()->toTimeString(), // waktu saat ini
+            'status'           => 'H',
+            'hadir'            => 'Y',
+        ]);
+
+        return redirect()->route('presensi.index')->with('success', 'Presensi masuk berhasil disimpan!');
+    }
+
+    // --- JIKA SUDAH PRESENSI (PULANG) ---
+    if ($presensi->scan_out == null) {
+        $presensi->update([
+            'scan_out' => now()->toTimeString(), // isi jam pulang
+        ]);
+
+        return redirect()->route('presensi.index')->with('success', 'Presensi pulang berhasil diperbarui!');
+    }
+
+    // --- JIKA SUDAH MASUK & PULANG ---
+    return redirect()->route('presensi.index')->with('info', 'Anda sudah melakukan presensi masuk dan pulang hari ini!');
 }
 
 
