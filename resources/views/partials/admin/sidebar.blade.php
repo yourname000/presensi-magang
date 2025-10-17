@@ -27,12 +27,7 @@
                 </a>
             </li>
 
-            <li class="sidebar-heading">GALLERY ABSEN</li>
-            <li class="nav-item">
-                <a href="#" class="nav-link">
-                    <i class="fa-solid fa-camera me-2"></i> Foto Absen
-                </a>
-            </li>
+       
 
              <!-- MANAJEMEN ABSENSI -->
             <li class="sidebar-heading">MANAJEMEN ABSENSI</li>
@@ -40,17 +35,7 @@
                 <a href="{{ route('presensi.report') }}" class="nav-link {{ ($segment1 == 'laporan' && $segment2 == 'presensi') ? 'active' : '' }}">
                     <i class="fa-solid fa-list-check me-2"></i> Absensi
                 </a>
-            </li>
-            <li class="nav-item">
-                <a href="#" class="nav-link">
-                    <i class="fa-solid fa-envelope me-2"></i> Perizinan Absensi
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="#" class="nav-link">
-                    <i class="fa-solid fa-tags me-2"></i> Jenis Perizinan
-                </a>
-            </li>
+
 
             <li class="sidebar-heading">PENGATURAN</li>
             <li class="nav-item">

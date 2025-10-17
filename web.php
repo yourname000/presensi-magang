@@ -19,15 +19,15 @@ Route::get('/', function () {
 });
 
 // ==========================================
-// AUTHENTICATION (TANPA MIDDLEWARE)
+// AUTHENTICATION
 // ==========================================
-Route::controller(AuthController::class)->group(function () {
-    Route::get('/login', 'index')->name('login');
-    Route::post('/login-proses', 'loginProses')->name('login.process');
+Route::middleware(AuthMiddleware::class)->group(function () {
+    Route::get('/login', [AuthController::class, 'index'])->name('login');
+    Route::post('/login-proses', [AuthController::class, 'loginProses'])->name('login.process');
 });
 
 // ==========================================
-// DASHBOARD PROTECTED AREA (LOGIN WAJIB)
+// DASHBOARD PROTECTED AREA
 // ==========================================
 Route::middleware(DashboardMiddleware::class)->group(function () {
 
@@ -70,7 +70,7 @@ Route::middleware(DashboardMiddleware::class)->group(function () {
         Route::get('/laporan/presensi', 'report')->name('presensi.report');
         Route::get('/presensi/foto', 'gallery')->name('presensi.foto');
 
-        // Tambahan penting agar tabel presensi bisa tampil
+        // Tambahan penting ar tabel presensi bisa tampil
         Route::get('/presensi/table', 'table_presensi')->name('presensi.table_presensi');
 
         // POST
@@ -85,7 +85,7 @@ Route::middleware(DashboardMiddleware::class)->group(function () {
         Route::post('/single-izin', 'single_izin')->name('single.izin');
 
         // Presensi
-        Route::post('/presensi/insert', 'insert_presensi')->name('insert_presensi');
+        Route::post('/presensi/insert', 'insert_presensi')->name('insert.presensi');
         Route::post('/presensi/update', 'update_presensi')->name('update.presensi');
         Route::post('/card-image', 'card_image')->name('card.image');
         Route::post('/single-presensi', 'single_presensi')->name('single.presensi');
@@ -135,3 +135,4 @@ Route::middleware(DashboardMiddleware::class)->group(function () {
 // LOGOUT
 // ==========================================
 Route::match(['get', 'post'], '/logout', [AuthController::class, 'logout'])->name('logout');
+

@@ -196,80 +196,63 @@ class PresensiController extends Controller
         return view('presensi.single', compact('presensi', 'user'));
     }
 
-    public function update_presensi(Request $request)
-    {
-        $id_presensi = $request->input('id_presensi') ?? 0;
-        $status = $request->input('status') ?? '';
-        $waktu_terlambat = $request->input('waktu_terlambat') ?? 0;
-        $lembur = $request->input('lembur') ?? 0;
-        $pulang_cepat = $request->input('pulang_cepat') ?? 0;
-        $keterangan = $request->input('keterangan') ?? '';
-        $tanggal_presensi = $request->input('tanggal_presensi') ?? now()->toDateString();
-        $id_user = $request->input('id_user') ?? null;
-        $id_departemen = $request->input('id_departemen') ?? null;
+  public function update_presensi(Request $request)
+{
+    $id_presensi = $request->input('id_presensi');
+    $id_user = $request->input('id_user');
+    $tanggal_presensi = $request->input('tanggal_presensi') ?? now()->toDateString();
+    $status = $request->input('status') ?? 'H'; // default H biar gak kosong
+    $keterangan = $request->input('keterangan') ?? '';
 
-        // VALIDASI MANUAL (tidak pakai JSON)
-        $rules = [
-            'status' => 'required',
-            'tanggal_presensi' => 'required|date',
-            'id_departemen' => 'required|integer',
-            'id_user' => 'required|integer',
-        ];
-
-        if ($status == 'H') {
-            $rules['id_shift'] = 'required|integer';
-            $rules['scan_in'] = 'required';
-            $rules['scan_out'] = 'required';
-        }
-
-        $validated = $request->validate($rules);
-
-        $action = false;
+    try {
+        // Cari data presensi berdasarkan ID atau user + tanggal
+        $presensi = null;
 
         if ($id_presensi) {
-            $dbpresensi = Presensi::find($id_presensi);
-            if ($dbpresensi && $dbpresensi->hadir == 'Y') {
-                $dbpresensi->id_shift = $request->id_shift;
-                $dbpresensi->scan_in = $request->scan_in;
-                $dbpresensi->scan_out = $request->scan_out;
-                $dbpresensi->keterangan = $keterangan;
-                $dbpresensi->terlambat = $waktu_terlambat > 0 ? 'Y' : 'N';
-                $dbpresensi->waktu_terlambat = $waktu_terlambat;
-                $dbpresensi->status_terlambat = $request->status_terlambat;
-                $dbpresensi->pulang_cepat = $pulang_cepat;
-                $dbpresensi->status_pulang_cepat = $request->status_pulang_cepat;
-                $dbpresensi->lembur = $lembur;
-                $action = $dbpresensi->save();
-            }
-        } else {
-            $presensi = new Presensi();
-            $presensi->hadir = $status == 'H' ? 'Y' : 'N';
-            $presensi->tanggal_presensi = $tanggal_presensi;
-            $presensi->id_user = $id_user;
-            $presensi->id_departemen = $id_departemen;
-            if ($status == 'H') {
-                $presensi->id_shift = $request->id_shift;
-                $presensi->scan_in = $request->scan_in;
-                $presensi->scan_out = $request->scan_out;
-            }
-            $presensi->keterangan = $keterangan;
-            $presensi->terlambat = $waktu_terlambat > 0 ? 'Y' : 'N';
-            $presensi->waktu_terlambat = $waktu_terlambat;
-            $presensi->pulang_cepat = $pulang_cepat;
-            $presensi->lembur = $lembur;
-            $action = $presensi->save();
+            $presensi = Presensi::find($id_presensi);
         }
 
-        if ($action) {
-            return redirect()
-                ->route('presensi.report')
-                ->with('success', 'Data Presensi Berhasil Diperbarui!');
+        if (!$presensi) {
+            $presensi = Presensi::where('id_user', $id_user)
+                ->whereDate('tanggal_presensi', $tanggal_presensi)
+                ->first();
         }
+
+        // Jika belum ada → buat baru
+        if (!$presensi) {
+            $presensi = new Presensi();
+            $presensi->id_user = $id_user;
+            $presensi->tanggal_presensi = $tanggal_presensi;
+            $presensi->hadir = $status == 'H' ? 'Y' : 'N';
+        }
+
+        // Update data (baik baru maupun lama)
+        $presensi->id_departemen = $request->input('id_departemen');
+        $presensi->id_shift = $request->input('id_shift');
+        $presensi->scan_in = $request->input('scan_in');
+        $presensi->scan_out = $request->input('scan_out');
+        $presensi->terlambat = $request->input('waktu_terlambat') > 0 ? 'Y' : 'N';
+        $presensi->waktu_terlambat = $request->input('waktu_terlambat') ?? 0;
+        $presensi->status_terlambat = $request->input('status_terlambat') ?? 'N';
+        $presensi->status_pulang_cepat = $request->input('status_pulang_cepat') ?? 'N';
+        $presensi->pulang_cepat = $request->input('pulang_cepat') ?? 0;
+        $presensi->lembur = $request->input('lembur') ?? 0;
+        $presensi->lat_in = $request->input('latitude');
+        $presensi->lng_in = $request->input('longitude');
+        $presensi->keterangan = $keterangan;
+
+        $presensi->save();
 
         return redirect()
+            ->route('presensi.report')
+            ->with('success', 'Presensi berhasil diperbarui!');
+    } catch (\Exception $e) {
+        // kalau gagal
+        return redirect()
             ->back()
-            ->with('error', 'Data Presensi Gagal Diperbarui!');
+            ->with('error', 'Presensi gagal diperbarui! Error: ' . $e->getMessage());
     }
+}
 
 
     public function export_presensi(Request $request)

@@ -17,6 +17,23 @@
         @include('partials.admin.heading')
     </div>
 
+      {{-- ALERT --}}
+            @if(session('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fa-solid fa-circle-check me-2"></i>
+                    {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup"></button>
+                </div>
+            @endif
+
+            @if(session('error'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fa-solid fa-circle-xmark me-2"></i>
+                    {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup"></button>
+                </div>
+            @endif
+
     <div class="row gx-5 gx-xl-10 mb-xl-10">
         <div class="col-md-12 col-lg-12 col-xl-12 col-xxl-12 mb-4">
             <!--begin::Card widget 16-->
@@ -149,7 +166,7 @@
                     </div>
                 </div>
 
-                <form method="POST" action="{{ route('insert.presensi') }}" id="form_presensi">
+                <form method="POST" action="{{ route('insert_presensi') }}" id="form_presensi">
                     @csrf 
                     
                     {{-- Input Koordinat (BARU) --}}
@@ -173,20 +190,8 @@
                         <input type="hidden" name="id_shift" value="{{ $presensi->id_shift ?? '' }}">
                     @endif
 
-                    <div class="mb-4 custom-upload-wrapper" style="display : none;">
-                        <label class="form-label required-label">Upload Selfie:</label>
-
-                        <div class="preview-container">
-                            <div class="form-control d-flex justify-content-center align-items-center flex-column custom-upload-box" style="cursor:pointer;">
-                                <i class="fa-solid fa-camera mb-1"></i>
-                                <span class="small">Klik untuk ambil foto</span>
-                            </div>
-                        </div>
-
-                        <input type="hidden" name="selfie" id="uploadSelfie" />
-                    </div>
+     
                 </form>
-            </div>
 
             <div class="modal-footer border-0 pt-0 d-flex justify-content-between">
                 <button type="button" class="btn btn-danger btn-lg flex-fill me-2 custom-batal-btn" data-bs-dismiss="modal">
