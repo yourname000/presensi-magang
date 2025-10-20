@@ -5,7 +5,6 @@
 
 @push('script')
 <script src="{{ asset('assets/admin/js/dashboard.js') }}"></script>
-<script src="{{ asset('assets/admin/js/pawn/all.js') }}"></script>
 @endpush
 
 @section('content')

@@ -9,6 +9,7 @@ use App\Models\Shift;
 use App\Models\Departemen;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon; // 🚨 Tambahkan ini
+use Illuminate\Support\Facades\Session;
 
 class PresensiController extends Controller
 {
@@ -196,49 +197,119 @@ class PresensiController extends Controller
         return view('presensi.single', compact('presensi', 'user'));
     }
 
-    public function update_presensi(Request $request)
+public function update_presensi(Request $request)
 {
-    $id_user       = $request->input('id_user') ?? session(config('session.prefix').'_id_user');
-    $id_departemen = $request->input('id_departemen');
-    $id_shift      = $request->input('id_shift');
-    $tanggal_presensi = now()->toDateString(); // otomatis tanggal hari ini
+    $id_user          = $request->input('id_user') ?? session(config('session.prefix').'_id_user');
+    $id_departemen    = $request->input('id_departemen');
+    $id_shift         = $request->input('id_shift');
+    $tanggal_presensi = now()->toDateString();
+    $status           = $request->input('status');
+    $id_presensi      = $request->input('id_presensi');
+    $waktu_terlambat  = $request->input('waktu_terlambat', 0);
 
-    // --- VALIDASI ---
-    if (empty($id_user) || empty($id_departemen) || empty($id_shift)) {
-        return redirect()->back()->with('error', 'Data karyawan, departemen, dan shift wajib diisi!');
+    if (empty($id_user) || empty($id_departemen)) {
+        return redirect()->back()->with('error', 'Data karyawan dan departemen wajib diisi!');
     }
 
-    // --- CEK APAKAH SUDAH PRESENSI HARI INI ---
+    $shift = Shift::find($id_shift);
+    if (!$shift) {
+        return redirect()->back()->with('error', 'Shift tidak ditemukan!');
+    }
+
+    $jam_masuk_shift  = Carbon::parse($shift->jam_masuk);
+    $jam_pulang_shift = Carbon::parse($shift->jam_pulang);
+    $sekarang         = Carbon::now();
+
     $presensi = Presensi::where('id_user', $id_user)
         ->whereDate('tanggal_presensi', $tanggal_presensi)
         ->first();
 
-    // --- JIKA BELUM PRESENSI (MASUK) ---
+    // === PRESENSI MASUK ===
     if (!$presensi) {
+        $status_terlambat = 'N';
+        $menit_terlambat  = 0;
+        $status_karyawan  = 'Masuk Tepat Waktu';
+
+        if ($sekarang->gt($jam_masuk_shift)) {
+            $status_terlambat = 'Y';
+            $menit_terlambat  = abs($sekarang->diffInMinutes($jam_masuk_shift));
+            $status_karyawan  = 'Terlambat';
+        }
+
         Presensi::create([
             'id_user'          => $id_user,
-            'id_departemen'    => $id_departemen,
             'id_shift'         => $id_shift,
             'tanggal_presensi' => $tanggal_presensi,
-            'scan_in'          => now()->toTimeString(), // waktu saat ini
-            'status'           => 'H',
+            'scan_in'          => $sekarang->toTimeString(),
             'hadir'            => 'Y',
+            'terlambat'        => $status_terlambat,
+            'waktu_terlambat'  => $menit_terlambat,
+            'status'           => $status_karyawan,
         ]);
 
-        return redirect()->route('presensi.index')->with('success', 'Presensi masuk berhasil disimpan!');
+        return redirect()->back()->with('success', 'Presensi masuk berhasil direkam!');
     }
 
-    // --- JIKA SUDAH PRESENSI (PULANG) ---
+    // === PRESENSI PULANG ===
     if ($presensi->scan_out == null) {
+        $status_pulang_cepat = 'N';
+        $menit_pulang_cepat  = 0;
+        $lembur_menit        = 0;
+        $status_karyawan     = 'Pulang Normal';
+
+        // hitung pulang cepat atau lembur
+        if ($sekarang->lt($jam_pulang_shift)) {
+            // Pulang lebih awal
+            $status_pulang_cepat = 'Y';
+            $menit_pulang_cepat  = abs($jam_pulang_shift->diffInMinutes($sekarang));
+            $lembur_menit        = 0; // pastikan lembur nol
+            $status_karyawan     = 'Pulang Cepat';
+        } elseif ($sekarang->gt($jam_pulang_shift)) {
+            // Pulang lembur
+            $status_pulang_cepat = 'N';
+            $menit_pulang_cepat  = 0; // pastikan pulang cepat nol
+            $lembur_menit        = abs($sekarang->diffInMinutes($jam_pulang_shift));
+            $status_karyawan     = 'Lembur';
+        }
+
         $presensi->update([
-            'scan_out' => now()->toTimeString(), // isi jam pulang
+            'scan_out'            => $sekarang->toTimeString(),
+            'status_pulang_cepat' => $status_pulang_cepat,
+            'pulang_cepat'        => $menit_pulang_cepat,
+            'lembur'              => $lembur_menit,
+            'status'              => $status_karyawan,
         ]);
 
-        return redirect()->route('presensi.index')->with('success', 'Presensi pulang berhasil diperbarui!');
+        return redirect()->back()->with('success', 'Presensi pulang berhasil direkam!');
     }
 
-    // --- JIKA SUDAH MASUK & PULANG ---
-    return redirect()->route('presensi.index')->with('info', 'Anda sudah melakukan presensi masuk dan pulang hari ini!');
+    return redirect()->back()->with('info', 'Presensi hari ini sudah lengkap (masuk & pulang).');
+}
+
+
+public function delete_multiple_presensi(Request $request)
+{
+    // Ambil ID dari data yang dipilih.
+    // Pastikan nama input di form adalah 'id_presensi[]'.
+    $selectedIds = $request->input('id_presensi');
+
+    // Jika tidak ada ID yang dipilih, kembalikan ke halaman sebelumnya.
+    if (empty($selectedIds)) {
+        Session::flash('error', 'Tidak ada data presensi yang dipilih!');
+        return redirect()->route('presensi.report');
+    }
+
+    try {
+        // Hapus data dari tabel 'presensi' berdasarkan id_presensi.
+        \App\Models\Presensi::whereIn('id_presensi', $selectedIds)->delete();
+        Session::flash('success', 'Data presensi yang dipilih berhasil dihapus!');
+    } catch (\Exception $e) {
+        // Tangkap error jika proses penghapusan gagal.
+        Session::flash('error', 'Gagal menghapus data presensi yang dipilih!');
+    }
+
+    // Kembali ke halaman daftar presensi.
+    return redirect()->route('presensi.report');
 }
 
 

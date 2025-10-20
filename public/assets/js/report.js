@@ -84,6 +84,48 @@ $(document).ready(function () {
 // ===============================================
 
 
+ // ===============================================
+    // ✅ SISTEM CHECKBOX SELECT-ALL + HAPUS MASSAL
+    // ===============================================
+    const deleteBtn = $('#delete-selected-btn');         // Tombol "Hapus Terpilih"
+    const selectAll = $('#checkAll');                    // Checkbox utama di header
+    const itemCheckboxes = '.presensi-checkbox';         // Checkbox per baris
+    const bulkDeleteForm = $('#bulk-delete-form');       // Form hapus massal
+
+    // 🔸 Fungsi untuk menampilkan/sembunyikan tombol hapus
+    const updateDeleteButtonVisibility = () => {
+        const checkedCount = $(itemCheckboxes + ':checked').length;
+        deleteBtn.toggle(checkedCount > 0);
+    };
+
+    // 🔸 Event saat checkbox baris berubah
+    $('body').on('change', itemCheckboxes, function () {
+        const checkedCount = $(itemCheckboxes + ':checked').length;
+        const totalCount = presensiTable.rows({ page: 'current' }).nodes().to$().find(itemCheckboxes).length;
+
+        selectAll.prop('checked', checkedCount === totalCount);
+        updateDeleteButtonVisibility();
+    });
+
+    // 🔸 Event saat "Pilih Semua" diklik
+    selectAll.on('change', function () {
+        const isChecked = $(this).prop('checked');
+        $(itemCheckboxes).prop('checked', isChecked);
+        updateDeleteButtonVisibility();
+    });
+
+    // 🔸 Klik tombol hapus massal
+    deleteBtn.on('click', function () {
+        const selectedCount = $(itemCheckboxes + ':checked').length;
+        if (selectedCount > 0 && confirm(`Yakin ingin menghapus ${selectedCount} data presensi terpilih?`)) {
+            bulkDeleteForm.submit();
+        }
+    });
+
+// 🔸 Jalankan saat halaman pertama kali dimuat
+updateDeleteButtonVisibility();
+
+
 // === Fungsi ubah data presensi ===
 function ubah_data(id_presensi = null, id_user = null, tgl = null) {
     const form = document.getElementById('form_presensi');

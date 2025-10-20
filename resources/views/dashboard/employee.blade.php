@@ -2,33 +2,21 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('assets/css/employee.css') }}">
-@endpush
-
-@push('script')
-<script src="{{ asset('assets/js/employee.js') }}"></script>
-<script>
-    // Auto fade-out flash messages
-    document.addEventListener("DOMContentLoaded", () => {
-        const alerts = document.querySelectorAll('.alert');
-        if (alerts.length) {
-            setTimeout(() => {
-                alerts.forEach(alert => alert.classList.add('hide'));
-            }, 3000);
-            setTimeout(() => {
-                alerts.forEach(alert => alert.remove());
-            }, 4000);
-        }
-    });
-</script>
-@endpush
 
 @section('content')
 <!--begin::Container-->
-<div class="container-xxl" id="kt_content_container">
+<div class="container-xxl d-flex flex-column justify-content-center align-items-center min-vh-100 py-5" id="kt_content_container" style="margin-bottom: 0 !important;">
+    
     <!--begin::Row Heading-->
-    <div class="row gx-5 gx-xl-10 mb-xl-10">
+    <div class="row gx-5 gx-xl-10 w-100 mb-4">
         @include('partials.admin.heading')
     </div>
+
+    <!--begin::Row Presensi-->
+    <div class="row gx-5 gx-xl-10 w-100">
+        <div class="col-md-12">
+            <div class="card card-flush border-0 shadow-sm" style="background-color: #458c84;">
+                <div class="card-body d-flex justify-content-center flex-column py-7">
 
     {{-- ALERT FLASH MESSAGE --}}
     @if(session('success'))
@@ -48,7 +36,7 @@
     @endif
 
     <!--begin::Row Presensi-->
-    <div class="row gx-5 gx-xl-10 mb-xl-10">
+    <div class="row gx-5 gx-xl-10 mb-xl-10 mt-4">
         <div class="col-md-12">
             <div class="card card-flush border-0 h-md-100 shadow-sm" style="background-color: #458c84;">
                 <div class="card-body d-flex justify-content-center flex-column py-7">
@@ -63,7 +51,7 @@
                         </div>
 
                         {{-- CARD JAM MASUK --}}
-                        <div class="col-lg-6 mb-4">
+                        <div class="col-lg-6 mb-5 mt-4">
                             <div class="card shadow-sm rounded-3 text-center p-3 py-7">
                                 <h3 class="text-muted fs-3 fw-semibold mb-5">
                                     <i class="fa-solid fa-clock me-1"></i> Jam Masuk
@@ -84,7 +72,7 @@
                         </div>
 
                         {{-- CARD JAM PULANG --}}
-                        <div class="col-lg-6 mb-4">
+                        <div class="col-lg-6 mb-5 mt-4">
                             <div class="card shadow-sm rounded-3 text-center p-3 py-7">
                                 <h3 class="text-muted fs-3 fw-semibold mb-5">
                                     <i class="fa-solid fa-person-running me-1"></i> Jam Pulang
@@ -99,13 +87,14 @@
                                         @else
                                             <span class="badge bg-secondary py-3 px-5">Belum Presensi</span>
                                         @endif
-                                    @elseif($presensi->pulang_cepat > 0)
+                                    @elseif($presensi->pulang_cepat != 0 && $presensi->pulang_cepat !== null)
                                         <span class="badge bg-danger py-3 px-5">Pulang Cepat</span>
-                                    @elseif($presensi->lembur > 0)
+                                    @elseif($presensi->lembur != 0 && $presensi->lembur !== null)
                                         <span class="badge bg-info py-3 px-5">Lembur</span>
                                     @else
                                         <span class="badge bg-success py-3 px-5">Pulang Normal</span>
                                     @endif
+
                                 </div>
                             </div>
                         </div>
@@ -198,4 +187,8 @@
         </div>
     </div>
 </div>
+
+@push('script')
+<script src="{{ asset('assets/js/employee.js') }}"></script>
+@endpush
 @endsection

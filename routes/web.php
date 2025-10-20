@@ -91,6 +91,9 @@ Route::middleware(DashboardMiddleware::class)->group(function () {
         Route::post('/single-presensi', 'single_presensi')->name('single.presensi');
         Route::post('/export-presensi', 'export_presensi')->name('export.presensi');
         Route::post('/delete-pic', 'delete_pic')->name('delete.pic');
+        Route::post('/presensi/multiple-delete', [PresensiController::class, 'delete_multiple_presensi'])
+         ->name('presensi.multiple_delete');
+
 
         // Profil
         Route::post('/update-profile','update_profile')->name('update.profile');

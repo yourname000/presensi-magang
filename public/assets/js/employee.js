@@ -26,6 +26,34 @@ setInterval(updateClock, 1000);
 updateClock();
 
 /* ==========================
+    FUNGSI CEK STATUS KETERANGAN
+========================== */
+function tampilkanStatusKeterangan() {
+    const s = window.presensiStatus;
+    let pesan = "";
+
+    if (s.hadir === "N" && s.kode_izin) {
+        pesan = `Izin: ${s.jenis_izin_nama}`;
+    } else if (s.hadir === "N") {
+        pesan = "Tidak Hadir";
+    } else if (s.terlambat === "Y" && s.waktu_terlambat > 0) {
+        pesan = `Terlambat ${s.waktu_terlambat} menit`;
+    } else if (s.pulang_cepat > 0 && s.lembur == 0) {
+        pesan = `Pulang cepat ${s.pulang_cepat} menit`;
+    } else if (s.lembur > 0) {
+        pesan = `Lembur ${s.lembur} menit`;
+    } else {
+        pesan = "Presensi normal";
+    }
+
+    // tampilkan hasil status di console dan alert kecil
+    console.log("Status Presensi:", pesan);
+    const keteranganBox = document.getElementById("statusKeteranganBox");
+    if (keteranganBox) {
+        keteranganBox.textContent = pesan;
+    }
+}
+/* ==========================
     FUNGSI CEK & AMBIL LOKASI
 ========================== */
 // ✅ Tambahkan parameter `status` agar bisa tahu presensi Masuk / Pulang
