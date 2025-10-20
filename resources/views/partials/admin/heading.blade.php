@@ -5,8 +5,7 @@
     <div style="
         background: linear-gradient(90deg,#26A69A 0%, #113355 50%, #00695C 100%); 
         margin: 0;
-        padding: 20px;
-    ">
+        padding: 20px;">
         <div class="text-center">
             <div class="d-flex align-items-center justify-content-center mb-2">
                 @if(isset($icon))

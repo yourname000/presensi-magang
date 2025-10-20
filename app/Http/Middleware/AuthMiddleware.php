@@ -6,39 +6,28 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\App;
 
 use App\Models\Pengaturan;
+use App\Models\User;
 
 class AuthMiddleware
 {
     public function handle(Request $request, Closure $next): mixed
     {
-        // Load pengaturan untuk semua request
+        $prefix = config('session.prefix');
+        $id_user = Session::get("{$prefix}_id_user");
+        $id_role = Session::get("{$prefix}_id_role");
+
         if (Schema::hasTable('pengaturan')) {
             $pengaturan = Pengaturan::where('id_pengaturan', 1)->first();
             View::share('setting', $pengaturan);
+            App::instance('setting', $pengaturan); // optional
         }
 
-        // Cek session manual
-        $prefix = config('session.prefix', 'app');
-        $id_user = Session::get("{$prefix}_id_user");
-        $peran = Session::get("{$prefix}_peran");
-        
-        // Cek apakah sedang mengakses halaman login
-        $isLoginPage = $request->is('login') || $request->is('login-proses') || $request->is('/');
-        
-        // Jika user sudah login
-        if ($id_user && $peran) {
-            // Jika sudah login tapi akses halaman login, redirect ke dashboard
-            if ($isLoginPage) {
-                return redirect('/dashboard');
-            }
-        } else {
-            // User belum login
-            // Jika belum login dan bukan halaman login, redirect ke login
-            if (!$isLoginPage) {
-                return redirect('/login');
-            }
+        if ($id_user) {
+            return redirect('/dashboard');
         }
 
         return $next($request);
