@@ -138,3 +138,17 @@ function handleKonfirmasi() {
         document.getElementById("form_presensi").submit();
     }
 }
+
+    /* ==========================
+    FUNGSI TAMPILKAN MODAL PROFIL
+========================== */
+function set_modal_profile() {
+    $(".modal-backdrop").remove();
+    $("body").removeClass("modal-open");
+
+    const modal = new bootstrap.Modal(document.getElementById('kt_modal_profile'));
+    modal.show();
+
+
+}
+

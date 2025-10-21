@@ -497,71 +497,33 @@ class DashboardController extends Controller
 
 
 
-  public function updateProfile(Request $request)
+public function updateProfile(Request $request)
 {
+    $request->validate([
+        'kata_sandi' => 'required',
+        'kata_sandi_baru' => 'required|min:6',
+        'kata_sandi_konfirm' => 'required|same:kata_sandi_baru',
+    ]);
+
+    // Ambil id_user dari session untuk memastikan kita mendapatkan instance Eloquent User
     $prefix  = config('session.prefix');
     $id_user = session($prefix . '_id_user');
 
     $user = User::where('id_user', $id_user)->first();
 
     if (!$user) {
-        return redirect()->back()->with('error', 'User tidak ditemukan!');
+        return back()->with('error', 'User tidak ditemukan!');
     }
 
-    // jika bukan POST -> tampilkan halaman
-    if (!$request->isMethod('post')) {
-        return view('dashboard.employee', ['profile' => $user]);
+    // Cek password lama
+    if (!Hash::check($request->kata_sandi, $user->kata_sandi)) {
+        return back()->with('error', 'Kata sandi lama tidak sesuai!');
     }
 
-    $post = [];
+    // Update password
+    $user->kata_sandi = $request->kata_sandi_baru;
+    $user->save();
 
-    // Update kata sandi hanya jika user mengisi kata_sandi_baru
-    if ($request->filled('kata_sandi_baru')) {
-        $kata_sandi_lama = $request->input('kata_sandi');
-        $kata_sandi_baru = $request->input('kata_sandi_baru');
-        $kata_sandi_konfirm = $request->input('kata_sandi_konfirm');
-
-        // validasi semua terisi
-        if (!$kata_sandi_lama || !$kata_sandi_baru || !$kata_sandi_konfirm) {
-            return redirect()->back()->with('error', 'Semua kolom kata sandi harus diisi!');
-        }
-
-        // cek kata sandi lama terhadap hash di DB
-        if (!\Illuminate\Support\Facades\Hash::check($kata_sandi_lama, $user->kata_sandi)) {
-            return redirect()->back()->with('error', 'Kata sandi lama tidak valid!');
-        }
-
-        // cek konfirmasi
-        if ($kata_sandi_baru !== $kata_sandi_konfirm) {
-            return redirect()->back()->with('error', 'Konfirmasi kata sandi tidak sama!');
-        }
-
-        // **JANGAN Hash::make()** di sini — model punya mutator yang otomatis hash
-        $post['kata_sandi'] = $kata_sandi_baru;
-    }
-
-    
-    // contoh update field lain bila ada
-    if ($request->filled('nama')) {
-        $post['nama'] = $request->input('nama');
-    }
-    if ($request->filled('username')) {
-        $post['username'] = $request->input('username');
-    }
-
-    if (empty($post)) {
-        return redirect()->back()->with('info', 'Tidak ada perubahan pada profil.');
-    }
-
-    $update = $user->update($post);
-
-   if ($update) {
-    // Ambil ulang user biar datanya paling baru
-    $user = User::where('id_user', $id_user)->first();
-
-    // Simpan ulang ke session biar foto langsung berubah
-    session([$prefix . '_image' => $user->image]);
-
-    return redirect()->back()->with('success', 'Profil berhasil diperbarui!');
+    return back()->with('success', 'Kata sandi berhasil diperbarui!');
 }
-}}
+}
