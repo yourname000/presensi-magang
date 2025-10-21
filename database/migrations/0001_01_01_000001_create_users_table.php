@@ -18,6 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger('id_departemen')->nullable();
             $table->string('username', 199)->nullable();
             $table->string('nik',199)->nullable();
+            $table->string('image',199)->nullable();
             $table->string('nama',199)->nullable();
             $table->string('kata_sandi', 200)->nullable();
             $table->unsignedBigInteger('created_by')->nullable();

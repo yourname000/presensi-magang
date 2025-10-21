@@ -37,6 +37,7 @@ Route::middleware(DashboardMiddleware::class)->group(function () {
     Route::controller(DashboardController::class)->group(function () {
         Route::get('/dashboard', 'index')->name('dashboard');
         Route::get('/profile', 'profile')->name('profile');
+        Route::post('/profile', 'updateProfile')->name('update.profile');
         Route::post('/absen-location', 'absenLocation')->name('absen.location');
     });
 
@@ -93,10 +94,6 @@ Route::middleware(DashboardMiddleware::class)->group(function () {
         Route::post('/delete-pic', 'delete_pic')->name('delete.pic');
         Route::post('/presensi/multiple-delete', [PresensiController::class, 'delete_multiple_presensi'])
          ->name('presensi.multiple_delete');
-
-
-        // Profil
-        Route::post('/update-profile','update_profile')->name('update.profile');
     });
 
     // -------------------------

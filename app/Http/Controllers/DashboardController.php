@@ -481,105 +481,87 @@ class DashboardController extends Controller
         }
     }
 
-    public function update_profile(Request $request)
-    {
-        $prefix  = config('session.prefix');
-        $peran = session($prefix.'_peran');
-        $id_user = session($prefix.'_id_user');
-        
-        $user = User::where('id_user', $id_user)->first();
 
-        if (!$user) {
-            return response()->json([
-                'status' => false,
-                'alert' => ['message' => 'User tidak ditemukan!']
-            ]);
-        }
+    public function profile()
+{
+    $prefix  = config('session.prefix');
+    $id_user = session($prefix . '_id_user');
+    $user = User::where('id_user', $id_user)->first();
 
-        $post = [];
-        $arrAccess = [];
-        $data = [];
-
-        $arrAccess[] = true;
-
-        if ($request->filled('kata_sandi')) {
-            $arrVar['kata_sandi_baru'] = 'Kata sandi baru';
-            $arrVar['kata_sandi_konfirm'] = 'Konfirmasi sandi baru';
-
-            foreach ($arrVar as $var => $value) {
-                $$var = $request->input($var);
-                if (!$$var) {
-                    $data['required'][] = ['req_' . $var, "$value tidak boleh kosong!"];
-                    $arrAccess[] = false;
-                } else {
-                    $post[$var] = trim($$var);
-                    $arrAccess[] = true;
-                }
-            }
-        }
-        
-
-        if (in_array(false, $arrAccess)) {
-            return response()->json(['status' => false, 'required' => $data['required']]);
-        }
-
-        if ($request->filled('kata_sandi')) {
-            if (Hash::check($request->kata_sandi, $user->kata_sandi)) {
-                if ($kata_sandi_baru != trim($kata_sandi_konfirm)) {
-                    return response()->json([
-                        'status' => 700,
-                        'alert' => ['message' => 'Konfirmasi kata sandi tidak sama!']
-                    ]);
-                }else{
-                    $post['kata_sandi'] = $kata_sandi_baru;
-                }
-            }else{
-                return response()->json([
-                    'status' => 700,
-                    'alert' => ['message' => 'Kata sandi tidak valid!']
-                ]);
-            }
-        }
-        
-        $tujuan = public_path('data/user/');
-        $name_image = $request->name_image;
-        if (!File::exists($tujuan)) {
-            File::makeDirectory($tujuan, 0755, true, true);
-        }
-
-        if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            $fileName = uniqid() . '.' . $image->getClientOriginalExtension();
-            $image->move($tujuan, $fileName);
-
-            if ($user->image && file_exists($tujuan . $user->image)) {
-                unlink($tujuan . $user->image);
-            }
-
-            $post['image'] = $fileName;
-        } elseif (!$name_image) {
-            if ($user->image && file_exists($tujuan . $user->image)) {
-                unlink($tujuan . $user->image);
-            }
-            $post['image'] = null;
-        }
-
-        $update = $user->update($post);
-
-        if ($update) {
-            return response()->json([
-                'status' => true,
-                'alert' => ['message' => 'Data profil berhasil diperbarui!'],
-                'reload' => true
-            ]);
-        } else {
-            return response()->json([
-                'status' => false,
-                'alert' => ['message' => 'Gagal memperbarui data!']
-            ]);
-        }
-
-        return response()->json(['status' => false]);
+    if (!$user) {
+        return redirect()->back()->with('error', 'User tidak ditemukan!');
     }
 
+    return view('dashboard.profile', ['profile' => $user]);
 }
+
+
+
+  public function updateProfile(Request $request)
+{
+    $prefix  = config('session.prefix');
+    $id_user = session($prefix . '_id_user');
+
+    $user = User::where('id_user', $id_user)->first();
+
+    if (!$user) {
+        return redirect()->back()->with('error', 'User tidak ditemukan!');
+    }
+
+    // jika bukan POST -> tampilkan halaman
+    if (!$request->isMethod('post')) {
+        return view('dashboard.employee', ['profile' => $user]);
+    }
+
+    $post = [];
+
+    // Update kata sandi hanya jika user mengisi kata_sandi_baru
+    if ($request->filled('kata_sandi_baru')) {
+        $kata_sandi_lama = $request->input('kata_sandi');
+        $kata_sandi_baru = $request->input('kata_sandi_baru');
+        $kata_sandi_konfirm = $request->input('kata_sandi_konfirm');
+
+        // validasi semua terisi
+        if (!$kata_sandi_lama || !$kata_sandi_baru || !$kata_sandi_konfirm) {
+            return redirect()->back()->with('error', 'Semua kolom kata sandi harus diisi!');
+        }
+
+        // cek kata sandi lama terhadap hash di DB
+        if (!\Illuminate\Support\Facades\Hash::check($kata_sandi_lama, $user->kata_sandi)) {
+            return redirect()->back()->with('error', 'Kata sandi lama tidak valid!');
+        }
+
+        // cek konfirmasi
+        if ($kata_sandi_baru !== $kata_sandi_konfirm) {
+            return redirect()->back()->with('error', 'Konfirmasi kata sandi tidak sama!');
+        }
+
+        // **JANGAN Hash::make()** di sini — model punya mutator yang otomatis hash
+        $post['kata_sandi'] = $kata_sandi_baru;
+    }
+
+    
+    // contoh update field lain bila ada
+    if ($request->filled('nama')) {
+        $post['nama'] = $request->input('nama');
+    }
+    if ($request->filled('username')) {
+        $post['username'] = $request->input('username');
+    }
+
+    if (empty($post)) {
+        return redirect()->back()->with('info', 'Tidak ada perubahan pada profil.');
+    }
+
+    $update = $user->update($post);
+
+   if ($update) {
+    // Ambil ulang user biar datanya paling baru
+    $user = User::where('id_user', $id_user)->first();
+
+    // Simpan ulang ke session biar foto langsung berubah
+    session([$prefix . '_image' => $user->image]);
+
+    return redirect()->back()->with('success', 'Profil berhasil diperbarui!');
+}
+}}
