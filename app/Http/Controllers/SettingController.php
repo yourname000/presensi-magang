@@ -116,7 +116,7 @@ class SettingController extends Controller
         // Simpan perubahan
         if (count($post) > 0) {
             $setting->update($post);
-            return redirect()->route('pengaturan', ['page' => 'website'])->with('success', 'Pengaturan Website berhasil disimpan!');
+            return redirect()->route('pengaturan', ['page' => 'website'])->with('success_web', 'Pengaturan Website berhasil disimpan!');
         }
 
         return redirect()->back()->with('info', 'Tidak ada perubahan yang disimpan.');
@@ -190,7 +190,7 @@ class SettingController extends Controller
             }
         }
 
-        return redirect()->route('pengaturan', ['page' => 'shift'])->with('success', 'Shift berhasil disimpan!');
+        return redirect()->route('pengaturan', ['page' => 'shift'])->with('success_shift', 'Shift berhasil disimpan!');
 
     }
 
@@ -198,7 +198,7 @@ class SettingController extends Controller
     public function delete_shift($id)
     {
         \DB::table('shift')->where('id_shift', $id)->delete();
-        return redirect()->back()->with('success', 'Shift berhasil dihapus.');
+        return redirect()->back()->with('success_shift', 'Shift berhasil dihapus.');
     }
 
 

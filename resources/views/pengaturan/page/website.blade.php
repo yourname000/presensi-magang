@@ -2,7 +2,7 @@
     @csrf
     <div class="container px-lg-5 px-sm-0">
 
-        @if(session('success'))
+        @if(session('success_web'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 <i class="fa-solid fa-circle-check me-2"></i>
                 {{ session('success') }}

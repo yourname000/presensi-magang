@@ -202,6 +202,7 @@
             </div>
         </div>
     </form>
+@endsection
 
     {{-- 🔹 MODAL EDIT PRESENSI --}}
     @foreach($presensi as $row)
@@ -244,7 +245,7 @@
     </div>
     @endforeach
 </div>
-@endsection
+
 
 @push('script')
 <script>

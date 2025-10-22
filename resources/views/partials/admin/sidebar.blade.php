@@ -61,7 +61,7 @@
             {{-- 🔹 Menu umum (semua user) --}}
             <li class="nav-item">
                 <a href="{{ route('logout') }}" class="nav-link">
-                    <i class="fa-solid fa-right-from-bracket me-2"></i> KELUAR
+                    <i class="fa-solid fa-right-from-bracket me-2"></i> Keluar
                 </a>
             </li>
         </ul>
