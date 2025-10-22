@@ -481,22 +481,6 @@ class DashboardController extends Controller
         }
     }
 
-
-    public function profile()
-{
-    $prefix  = config('session.prefix');
-    $id_user = session($prefix . '_id_user');
-    $user = User::where('id_user', $id_user)->first();
-
-    if (!$user) {
-        return redirect()->back()->with('error', 'User tidak ditemukan!');
-    }
-
-    return view('dashboard.profile', ['profile' => $user]);
-}
-
-
-
 public function updateProfile(Request $request)
 {
     $request->validate([

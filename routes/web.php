@@ -36,7 +36,6 @@ Route::middleware(DashboardMiddleware::class)->group(function () {
     // -------------------------
     Route::controller(DashboardController::class)->group(function () {
         Route::get('/dashboard', 'index')->name('dashboard');
-        Route::get('/profile', 'profile')->name('profile');
         Route::post('/profile', 'updateProfile')->name('update.profile');
         Route::post('/absen-location', 'absenLocation')->name('absen.location');
     });

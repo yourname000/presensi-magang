@@ -19,18 +19,7 @@
 
         <!--begin::Navbar items-->
         <div class="ms-auto d-flex align-items-center">
-            <!--begin::User menu-->
-            <div class="dropdown">
-                <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                    <i class="fas fa-user-circle me-2"></i>
-                    {{ session(config('session.prefix').'_nama') ?? 'User' }}
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item" href="{{ route('profile') }}"><i class="fas fa-user me-2"></i> Profile</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" href="{{ route('logout') }}"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
-                </ul>
-            </div>
+            
             <!--end::User menu-->
         </div>
         <!--end::Navbar items-->
