@@ -85,8 +85,8 @@ Route::middleware(DashboardMiddleware::class)->group(function () {
         Route::post('/single-izin', 'single_izin')->name('single.izin');
 
         // Presensi
-        Route::post('/presensi/insert', 'insert_presensi')->name('insert_presensi');
-        Route::post('/presensi/update', 'update_presensi')->name('update.presensi');
+        Route::post('/presensi/insert', 'insert_presensi')->name('insert.presensi');
+        Route::post('/presensi/update',  'update_presensi')->name('update.presensi');
         Route::post('/card-image', 'card_image')->name('card.image');
         Route::post('/single-presensi', 'single_presensi')->name('single.presensi');
         Route::post('/export-presensi', 'export_presensi')->name('export.presensi');

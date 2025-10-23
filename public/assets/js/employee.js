@@ -66,19 +66,20 @@ function presensi_location(status) {
                 let lat = position.coords.latitude;
                 let long = position.coords.longitude;
 
-                // Masukkan nilai koordinat ke form
-                document.getElementById("inputLatitude").value = lat;
-                document.getElementById("inputLongitude").value = long;
-
-                // ✅ Tambahkan logika untuk isi status otomatis
-                const statusInput = document.getElementById("inputStatus");
-                if (statusInput) {
-                    statusInput.value = status; // "Masuk" atau "Pulang"
+                // Simpan ke input sesuai status
+                if (status === "Masuk") {
+                    document.getElementById("inputLatitude").value = lat;
+                    document.getElementById("inputLongitude").value = long;
+                } else if (status === "Pulang") {
+                    document.getElementById("inputLatitudeOut").value = lat;
+                    document.getElementById("inputLongitudeOut").value = long;
                 }
+
+                const statusInput = document.getElementById("inputStatus");
+                if (statusInput) statusInput.value = status;
 
                 alert("✅ Lokasi ditemukan. Silakan lanjutkan presensi.");
 
-                // Tampilkan modal form presensi
                 const modalElement = document.getElementById("presensiModal");
                 const modal = new bootstrap.Modal(modalElement, { backdrop: false });
                 modal.show();
@@ -114,10 +115,19 @@ function presensi_location(status) {
     KONFIRMASI DAN KIRIM FORM
 ========================== */
 function handleKonfirmasi() {
-    const lat = document.getElementById("inputLatitude").value;
-    const lng = document.getElementById("inputLongitude").value;
     const status = document.getElementById("inputStatus").value;
 
+    // Ambil koordinat sesuai status
+    let lat, lng;
+    if (status === "Masuk") {
+        lat = document.getElementById("inputLatitude").value;
+        lng = document.getElementById("inputLongitude").value;
+    } else if (status === "Pulang") {
+        lat = document.getElementById("inputLatitudeOut").value;
+        lng = document.getElementById("inputLongitudeOut").value;
+    }
+
+    // Validasi
     if (!lat || !lng) {
         alert("📍 Data lokasi belum tersedia. Klik tombol presensi ulang.");
         return;
@@ -138,6 +148,7 @@ function handleKonfirmasi() {
         document.getElementById("form_presensi").submit();
     }
 }
+
 
     /* ==========================
     FUNGSI TAMPILKAN MODAL PROFIL

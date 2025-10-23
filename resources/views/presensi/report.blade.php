@@ -47,6 +47,24 @@
 </style>
 @endpush
 
+{{-- FLASH MESSAGE --}}
+@if(session('success'))
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fa-solid fa-check-circle me-2"></i> 
+        {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
+
+@if(session('error'))
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fa-solid fa-circle-exclamation me-2"></i>
+        {{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
+
+
 @section('content')
 <div class="container-xxl" id="kt_content_container">
     <div class="row gx-5 gx-xl-10 mb-xl-10 mb-sm-5">
@@ -172,7 +190,7 @@
                                     <td>{{ $row->user->departemen->nama ?? '-' }}</td>
                                     <td>{{ $row->user->nik }}</td>
                                     <td>{{ $row->user->nama }}</td>
-                                    <td class="text-center">{{ $row->shift ?? '-' }}</td>
+                                    <td class="text-center">{{ $row->shift->nama ?? '' }}</td>
                                     <td class="text-center">{{ $row->scan_in ? \Carbon\Carbon::parse($row->scan_in)->format('H:i') : '-' }}</td>
                                     <td class="text-center">{{ $row->scan_out ? \Carbon\Carbon::parse($row->scan_out)->format('H:i') : '-' }}</td>
                                     <td class="text-center">
@@ -189,9 +207,23 @@
                                     <td class="text-center">{{ $row->lembur ?? 0 }}</td>
                                     <td class="text-center">{{ $row->pulang_cepat ?? 0 }}</td>
                                     <td class="text-center">
-                                        <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalEditPresensi{{ $row->id_presensi }}">
-                                            <i class="fa-solid fa-edit"></i>
+                                        <button 
+                                            type="button" 
+                                            class="btn btn-sm btn-warning btn-edit-presensi"
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#modalEditPresensi{{ $row->id_presensi }}"
+                                            data-id="{{ $row->id_presensi }}"
+                                            data-scanin="{{ $row->scan_in ? \Carbon\Carbon::parse($row->scan_in)->format('H:i') : '' }}"
+                                            data-scanout="{{ $row->scan_out ? \Carbon\Carbon::parse($row->scan_out)->format('H:i') : '' }}"
+                                            data-terlambat="{{ $row->waktu_terlambat ?? 0 }}"
+                                            data-pulangcepat="{{ $row->pulang_cepat ?? 0 }}"
+                                            data-lembur="{{ $row->lembur ?? 0 }}"
+                                            data-keterangan="{{ $row->keterangan ?? '' }}"
+                                            data-jammasukshift="{{ $row->shift ? date('H:i', strtotime($row->shift->jam_masuk)) : '' }}"
+                                            data-jampulangshift="{{ $row->shift ? date('H:i', strtotime($row->shift->jam_pulang)) : '' }}">
+                                            <i class="fa-solid fa-edit text-white"></i>
                                         </button>
+
                                     </td>
                                 </tr>
                                 @endforeach
@@ -204,46 +236,102 @@
     </form>
 @endsection
 
-    {{-- 🔹 MODAL EDIT PRESENSI --}}
-    @foreach($presensi as $row)
-    <div class="modal fade" id="modalEditPresensi{{ $row->id_presensi }}" tabindex="-1" aria-labelledby="modalEditPresensiLabel{{ $row->id_presensi }}" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header bg-light">
-                    <h5 class="modal-title" id="modalEditPresensiLabel{{ $row->id_presensi }}">Edit Data Presensi</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <form method="POST" action="{{ route('update.presensi') }}">
-                    @csrf
-                    <input type="hidden" name="id_presensi" value="{{ $row->id_presensi }}">
-                    <input type="hidden" name="id_user" value="{{ $row->user->id_user ?? '' }}">
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label class="form-label">Tanggal</label>
-                            <input type="text" name="tanggal_presensi" class="form-control" value="{{ $row->tanggal_presensi }}" readonly>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Jam Masuk</label>
-                            <input type="time" name="scan_in" class="form-control" value="{{ $row->scan_in ? \Carbon\Carbon::parse($row->scan_in)->format('H:i') : '' }}">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Jam Pulang</label>
-                            <input type="time" name="scan_out" class="form-control" value="{{ $row->scan_out ? \Carbon\Carbon::parse($row->scan_out)->format('H:i') : '' }}">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Keterangan</label>
-                            <input type="text" name="keterangan" class="form-control" value="{{ $row->keterangan }}">
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
-                    </div>
-                </form>
+{{-- 🔹 MODAL EDIT PRESENSI --}}
+@foreach($presensi as $row)
+<div class="modal fade" id="modalEditPresensi{{ $row->id_presensi }}" tabindex="-1" aria-labelledby="modalEditPresensiLabel{{ $row->id_presensi }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:500px;">
+        <div class="modal-content shadow-lg border-0 rounded-4">
+            
+            {{-- Header --}}
+            <div class="modal-header bg-light border-0 pb-0">
+                <h5 class="modal-title fw-bold text-center w-100" id="modalEditPresensiLabel{{ $row->id_presensi }}">
+                    Edit Data Presensi
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
+
+            {{-- Body --}}
+            <form method="POST" action="{{ route('update.presensi') }}">
+                @csrf
+                <input type="hidden" name="id_presensi" value="{{ $row->id_presensi }}">
+                <input type="hidden" name="id_user" value="{{ $row->id_user ?? $row->user->id_user ?? '' }}">
+
+
+
+                <div class="modal-body pt-2">
+                    {{-- Tanggal Presensi --}}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Tanggal Presensi</label>
+                        <input type="text" name="tanggal_presensi" class="form-control" value="{{ $row->tanggal_presensi }}" readonly>
+                    </div>
+
+                    {{-- Pilih Shift --}}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Pilih Shift</label>
+                        <select name="id_shift" class="form-select" required>
+                            <option value="">-- Pilih Shift --</option>
+                            @foreach($shift as $s)
+                                <option 
+                                    value="{{ $s->id_shift }}"
+                                    data-jam-masuk="{{ date('H:i', strtotime($s->jam_masuk)) }}"
+                                    data-jam-pulang="{{ date('H:i', strtotime($s->jam_pulang)) }}"
+                                    data-lembur="{{ $s->lembur ?? 0 }}" {{-- 👈 tambahkan ini --}}
+                                    {{ $row->shift && $row->shift->id_shift == $s->id_shift ? 'selected' : '' }}>
+                                    {{ $s->nama }} ({{ date('H:i', strtotime($s->jam_masuk)) }} - {{ date('H:i', strtotime($s->jam_pulang)) }})
+                                    - Min. Lembur: {{ $s->lembur ?? 0 }} mnt
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    {{-- Jam Masuk & Pulang --}}
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label class="form-label fw-semibold">Jam Masuk</label>
+                            <input type="time" name="scan_in" class="form-control"
+                                value="{{ $row->scan_in ? \Carbon\Carbon::parse($row->scan_in)->format('H:i') : '' }}">
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label fw-semibold">Jam Pulang</label>
+                            <input type="time" name="scan_out" class="form-control"
+                                value="{{ $row->scan_out ? \Carbon\Carbon::parse($row->scan_out)->format('H:i') : '' }}">
+                        </div>
+                    </div>
+
+                    {{-- Hitungan Terlambat, Pulang Cepat, Lembur --}}
+                    <div class="row">
+                        <div class="col-4 mb-3">
+                            <label class="form-label fw-semibold">Terlambat (mnt)</label>
+                            <input type="number" name="waktu_terlambat" class="form-control" value="{{ $row->waktu_terlambat ?? 0 }}">
+                        </div>
+                        <div class="col-4 mb-3">
+                            <label class="form-label fw-semibold">Pulang Cepat (mnt)</label>
+                            <input type="number" name="pulang_cepat" class="form-control" value="{{ $row->pulang_cepat ?? 0 }}">
+                        </div>
+                        <div class="col-4 mb-3">
+                            <label class="form-label fw-semibold">Lembur (mnt)</label>
+                            <input type="number" name="lembur" class="form-control" value="{{ $row->lembur ?? 0 }}">
+                        </div>
+                    </div>
+
+                    {{-- Keterangan --}}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Keterangan</label>
+                        <input type="text" name="keterangan" class="form-control" value="{{ $row->keterangan }}">
+                    </div>
+                </div>
+
+                {{-- Footer --}}
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-warning text-white fw-semibold">Simpan Perubahan</button>
+                </div>
+            </form>
         </div>
     </div>
-    @endforeach
+</div>
+@endforeach
+
 </div>
 
 

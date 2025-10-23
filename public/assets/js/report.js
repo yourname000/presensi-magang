@@ -126,42 +126,67 @@ $(document).ready(function () {
 updateDeleteButtonVisibility();
 
 
-// === Fungsi ubah data presensi ===
-function ubah_data(id_presensi = null, id_user = null, tgl = null) {
-    const form = document.getElementById('form_presensi');
-    // ... (logic ubah_data lainnya tetap sama)
-    $('#fake_tanggal_presensi').val(tgl);
-    $('input[name="tanggal_presensi"]').val(tgl);
-    $('input[name="id_user"]').val(id_user);
-    $('input[name="id_presensi"]').val(id_presensi);
-    $('#title_modal').text($('#title_modal').data('title').split('|')[0]);
-    form.setAttribute('action', BASE_URL + '/presensi/update');
-    
-    // 🚨 Tambahkan pemanggilan AJAX untuk mengisi data presensi (jika ada)
-    // Jika id_presensi null, reset form. Jika tidak, ambil data.
-    if (id_presensi) {
-        $.ajax({
-            url: BASE_URL + '/presensi/single/' + id_presensi,
-            type: 'GET',
-            success: function(response) {
-                 // Asumsi respons adalah HTML dari view 'presensi.single'
-                 $('#kt_modal_presensi .modal-body').html(response);
-            },
-            error: function() {
-                alert('Gagal mengambil data presensi.');
-            }
-        });
-    } else {
-        // Jika presensi baru (Alpha), panggil endpoint yang hanya butuh user/tanggal
-        $.ajax({
-            url: BASE_URL + '/presensi/single/null/' + id_user + '?tanggal=' + tgl,
-            type: 'GET',
-            success: function(response) {
-                 $('#kt_modal_presensi .modal-body').html(response);
-            },
-            error: function() {
-                alert('Gagal mengambil data user/tanggal.');
-            }
-        });
+/// === AUTO FILL MODAL EDIT PRESENSI ===
+$(document).on('click', '.btn-edit-presensi', function () {
+    const id = $(this).data('id');
+    const modal = $(`#modalEditPresensi${id}`);
+
+    // Ambil elemen input & select
+    const $shiftSelect = modal.find('select[name="id_shift"]');
+    const $scanIn = modal.find('input[name="scan_in"]');
+    const $scanOut = modal.find('input[name="scan_out"]');
+    const $terlambat = modal.find('input[name="waktu_terlambat"]');
+    const $pulangCepat = modal.find('input[name="pulang_cepat"]');
+    const $lembur = modal.find('input[name="lembur"]');
+
+    // Fungsi bantu hitung selisih menit
+    function hitungMenit(time1, time2) {
+        const t1 = new Date(`2000-01-01T${time1}:00`);
+        const t2 = new Date(`2000-01-01T${time2}:00`);
+        return Math.abs((t2 - t1) / 60000);
     }
-}
+
+    // Fungsi hitung presensi (bisa jalan walau salah satu field belum diisi)
+    function hitungPresensi() {
+        const scan_in = $scanIn.val();
+        const scan_out = $scanOut.val();
+        const selectedOption = $shiftSelect.find(':selected');
+        const jamMasukShift = selectedOption.data('jam-masuk');
+        const jamPulangShift = selectedOption.data('jam-pulang');
+        const batasLembur = selectedOption.data('lembur') || 0;
+
+        // Reset dulu
+        let menitTerlambat = 0;
+        let menitPulangCepat = 0;
+        let menitLembur = 0;
+
+        // Hitung keterlambatan kalau scan_in sudah diisi
+        if (scan_in && jamMasukShift) {
+            if (scan_in > jamMasukShift) {
+                menitTerlambat = hitungMenit(jamMasukShift, scan_in);
+            }
+        }
+
+        // Hitung pulang cepat / lembur kalau scan_out sudah diisi
+        if (scan_out && jamPulangShift) {
+            if (scan_out < jamPulangShift) {
+                menitPulangCepat = hitungMenit(scan_out, jamPulangShift);
+            } else if (scan_out > jamPulangShift) {
+                const totalLembur = hitungMenit(jamPulangShift, scan_out);
+                if (totalLembur >= batasLembur) {
+                    menitLembur = totalLembur;
+                }
+            }
+        }
+
+        // Masukkan hasil ke input
+        $terlambat.val(menitTerlambat);
+        $pulangCepat.val(menitPulangCepat);
+        $lembur.val(menitLembur);
+    }
+
+    // Jalankan perhitungan kalau ada perubahan:
+    $scanIn.on('change', hitungPresensi);
+    $scanOut.on('change', hitungPresensi);
+    $shiftSelect.on('change', hitungPresensi);
+});

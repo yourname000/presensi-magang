@@ -92,6 +92,9 @@ class PresensiController extends Controller
             dates.tanggal as tanggal_presensi,
             shift.kode as shift_kode,
             shift.nama as shift_nama,
+            shift.jam_masuk as shift_jam_masuk,
+            shift.jam_pulang as shift_jam_pulang,
+            presensi.id_presensi, presensi.id_shift,  -- ✅ tambahkan ini
             presensi.id_presensi, presensi.scan_in, presensi.scan_out, presensi.hadir,
             presensi.keterangan, presensi.terlambat, presensi.lembur, presensi.pulang_cepat,
             presensi.waktu_terlambat, presensi.status_terlambat, presensi.status_pulang_cepat,
@@ -139,7 +142,13 @@ class PresensiController extends Controller
                 'id_user' => $row->id_user,
                 'departemen' => (object)['nama' => $row->departemen_nama]
             ],
-            'shift' => $row->shift_nama,
+                'shift' => (object)[
+                'id_shift' => $row->id_shift ?? null,
+                'nama' => $row->shift_nama ?? null,
+                'kode' => $row->shift_kode ?? null,
+                'jam_masuk' => $row->shift_jam_masuk ?? null,
+                'jam_pulang' => $row->shift_jam_pulang ?? null,
+            ],
             'scan_in' => $row->scan_in,
             'scan_out' => $row->scan_out,
             'hadir' => $row->hadir,
@@ -196,17 +205,97 @@ class PresensiController extends Controller
 
         return view('presensi.single', compact('presensi', 'user'));
     }
-
 public function update_presensi(Request $request)
+{
+    // Ambil data dari form
+    $id_presensi        = $request->input('id_presensi');
+    $id_user            = $request->input('id_user') ?? session(config('session.prefix') . '_id_user');
+    $id_shift           = $request->input('id_shift');
+    $tanggal_presensi   = $request->input('tanggal_presensi', now()->toDateString());
+    $scan_in            = $request->input('scan_in');
+    $scan_out           = $request->input('scan_out');
+    $waktu_terlambat    = $request->input('waktu_terlambat', 0);
+    $pulang_cepat       = $request->input('pulang_cepat', 0);
+    $lembur             = $request->input('lembur', 0);
+    $keterangan         = $request->input('keterangan');
+    $lat_in             = $request->input('lat_in');
+    $lng_in             = $request->input('lng_in');
+    $lat_out            = $request->input('lat_out');
+    $lng_out            = $request->input('lng_out');
+
+    // 🔹 Tentukan status terlambat otomatis
+    $status_terlambat   = ($waktu_terlambat > 0) ? 'Y' : 'N';
+
+    // 🟡 Validasi minimal id_user agar tidak error
+    if (!$id_user) {
+        return redirect()->back()->with('error', 'ID User tidak ditemukan.');
+    }
+
+    // 🔹 Coba cari data presensi berdasarkan id_presensi
+    $presensi = Presensi::find($id_presensi);
+
+    // 🔹 Kalau belum ada, cari berdasarkan id_user + tanggal
+    if (!$presensi) {
+        $presensi = Presensi::where('id_user', $id_user)
+            ->whereDate('tanggal_presensi', $tanggal_presensi)
+            ->first();
+    }
+
+    // 🔹 Kalau tetap belum ada → buat baru otomatis
+    if (!$presensi) {
+        $presensi = Presensi::create([
+            'id_user'          => $id_user,
+            'id_shift'         => $id_shift,
+            'tanggal_presensi' => $tanggal_presensi,
+            'hadir'            => 'Y',
+            'scan_in'          => $scan_in,
+            'scan_out'         => $scan_out,
+            'lat_in'           => $lat_in,
+            'lng_in'           => $lng_in,
+            'lat_out'          => $lat_out,
+            'lng_out'          => $lng_out,
+            'terlambat'        => $status_terlambat,
+            'status_terlambat' => $status_terlambat,
+            'waktu_terlambat'  => $waktu_terlambat,
+            'pulang_cepat'     => $pulang_cepat,
+            'lembur'           => $lembur,
+            'keterangan'       => $keterangan,
+        ]);
+    } else {
+        // 🔹 Kalau sudah ada → update data
+        $presensi->update([
+            'id_shift'         => $id_shift,
+            'scan_in'          => $scan_in,
+            'scan_out'         => $scan_out,
+            'lat_in'           => $lat_in,
+            'lng_in'           => $lng_in,
+            'lat_out'          => $lat_out,
+            'lng_out'          => $lng_out,
+            'waktu_terlambat'  => $waktu_terlambat,
+            'terlambat'        => $status_terlambat, 
+            'status_terlambat' => $status_terlambat, 
+            'pulang_cepat'     => $pulang_cepat,
+            'lembur'           => $lembur,
+            'keterangan'       => $keterangan,
+        ]);
+    }
+
+    return redirect()->back()->with('success', 'Data presensi berhasil diperbarui.');
+}
+
+
+
+public function insert_presensi(Request $request)
 {
     $id_user          = $request->input('id_user') ?? session(config('session.prefix').'_id_user');
     $id_departemen    = $request->input('id_departemen');
     $id_shift         = $request->input('id_shift');
     $tanggal_presensi = now()->toDateString();
-    $status           = $request->input('status');
+    $status = $request->input('status'); // Masuk atau Pulang
     $id_presensi      = $request->input('id_presensi');
     $waktu_terlambat  = $request->input('waktu_terlambat', 0);
-
+    $lat = $request->input('lat_in');
+    $lng = $request->input('lng_in');
     if (empty($id_user) || empty($id_departemen)) {
         return redirect()->back()->with('error', 'Data karyawan dan departemen wajib diisi!');
     }
@@ -245,6 +334,8 @@ public function update_presensi(Request $request)
             'terlambat'        => $status_terlambat,
             'waktu_terlambat'  => $menit_terlambat,
             'status'           => $status_karyawan,
+            'lat_in'           => $request->lat_in,
+            'lng_in'           => $request->lng_in
         ]);
 
         return redirect()->back()->with('success', 'Presensi masuk berhasil direkam!');
@@ -276,6 +367,8 @@ public function update_presensi(Request $request)
             'scan_out'            => $sekarang->toTimeString(),
             'status_pulang_cepat' => $status_pulang_cepat,
             'pulang_cepat'        => $menit_pulang_cepat,
+            'lat_out'     => $request->lat_out,
+            'lng_out'     => $request->lng_out,
             'lembur'              => $lembur_menit,
             'status'              => $status_karyawan,
         ]);

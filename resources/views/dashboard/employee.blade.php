@@ -153,15 +153,17 @@
                     Lokasi Valid - Anda berada dalam radius kantor
                 </div>
 
-                <form method="POST" action="{{ route('update.presensi') }}" id="form_presensi">
+                <form method="POST" action="{{ route('insert.presensi') }}" id="form_presensi">
                     @csrf
                     <input type="hidden" name="id_presensi" value="{{ $presensi->id_presensi ?? 0 }}">
                     <input type="hidden" name="id_user" value="{{ $profile->id_user ?? Auth::user()->id }}">
                     <input type="hidden" name="id_departemen" value="{{ $profile->id_departemen ?? '' }}">
                     <input type="hidden" name="tanggal_presensi" value="{{ now()->toDateString() }}">
-                    <input type="hidden" name="latitude" id="inputLatitude">
-                    <input type="hidden" name="longitude" id="inputLongitude">
-                    <input type="hidden" name="status" id="inputStatus" value="H">
+                    <input type="hidden" name="lat_in" id="inputLatitude">
+                    <input type="hidden" name="lng_in" id="inputLongitude">
+                    <input type="hidden" name="lat_out" id="inputLatitudeOut">
+                    <input type="hidden" name="lng_out" id="inputLongitudeOut">
+                    <input type="hidden" name="status" id="inputStatus">
 
                     @if(!$isScanIn)
                         <div class="mb-3">
