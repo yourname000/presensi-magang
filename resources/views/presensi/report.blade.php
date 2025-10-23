@@ -111,7 +111,7 @@
                     <select id="select_status" class="form-select table-filter" name="status">
                         <option value="all" {{ $filter['status'] == 'all' ? 'selected' : '' }}>Semua</option>
                         <option value="L" {{ $filter['status'] == 'L' ? 'selected' : '' }}>Lembur</option>
-                        <option value="I" {{ $filter['status'] == 'I' ? 'selected' : '' }}>Izin</option>
+                        {{-- <option value="I" {{ $filter['status'] == 'I' ? 'selected' : '' }}>Izin</option> --}}
                         <option value="T" {{ $filter['status'] == 'T' ? 'selected' : '' }}>Terlambat</option>
                     </select>
                 </div>

@@ -115,17 +115,20 @@ class PresensiController extends Controller
     ";
 
     $bindings = [$startDateStr, $endDateStr, $id_user_login, $endDateStr];
-
+        
+    // ✅ Tambahkan filter departemen
+    if ($filterDepartemen && $filterDepartemen != 'all') {
+        $baseQuery .= " AND users.id_departemen = ?";
+        $bindings[] = $filterDepartemen;
+    }
+    
     // Filter status tambahan
     if ($filterStatus != 'all') {
         if ($filterStatus == 'L') {
             $baseQuery .= " AND presensi.lembur > 0";
         } elseif ($filterStatus == 'T') {
             $baseQuery .= " AND presensi.terlambat = 'Y'";
-        } elseif ($filterStatus == 'I') {
-            $baseQuery .= " AND presensi.hadir = 'N' AND presensi.keterangan IS NOT NULL AND presensi.keterangan != ''";
-        }
-    }
+    }}
 
     $baseQuery .= " ORDER BY dates.tanggal DESC, users.nama ASC";
 
@@ -190,21 +193,6 @@ class PresensiController extends Controller
         return view('presensi.search', compact('result'));
     }
 
-    public function single_presensi($id_presensi = null, $id_user = null)
-    {
-        $presensi = null;
-        $user = null;
-
-        if ($id_presensi) {
-            $presensi = Presensi::with('shift')->find($id_presensi);
-        }
-
-        if ($id_user) {
-            $user = User::find($id_user);
-        }
-
-        return view('presensi.single', compact('presensi', 'user'));
-    }
 public function update_presensi(Request $request)
 {
     // Ambil data dari form

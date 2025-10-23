@@ -68,29 +68,12 @@ Route::middleware(DashboardMiddleware::class)->group(function () {
         Route::get('/jenis/perizinan', 'jenis')->name('presensi.jenis');
         Route::get('/perizinan', 'izin')->name('presensi.izin');
         Route::get('/laporan/presensi', 'report')->name('presensi.report');
-        Route::get('/presensi/foto', 'gallery')->name('presensi.foto');
-
         // Tambahan penting agar tabel presensi bisa tampil
         Route::get('/presensi/table', 'table_presensi')->name('presensi.table_presensi');
-
-        // POST
-        // Jenis izin
-        Route::post('/presensi/jenis/insert', 'insert_jenis')->name('insert.jenis');
-        Route::post('/presensi/jenis/update', 'update_jenis')->name('update.jenis');
-
-        // Izin
-        Route::post('/presensi/izin/insert', 'insert_izin')->name('insert.izin');
-        Route::post('/presensi/izin/update', 'update_izin')->name('update.izin');
-        Route::post('/search-employee', 'search_employee')->name('search.employee');
-        Route::post('/single-izin', 'single_izin')->name('single.izin');
-
         // Presensi
         Route::post('/presensi/insert', 'insert_presensi')->name('insert.presensi');
         Route::post('/presensi/update',  'update_presensi')->name('update.presensi');
-        Route::post('/card-image', 'card_image')->name('card.image');
-        Route::post('/single-presensi', 'single_presensi')->name('single.presensi');
         Route::post('/export-presensi', 'export_presensi')->name('export.presensi');
-        Route::post('/delete-pic', 'delete_pic')->name('delete.pic');
         Route::post('/presensi/multiple-delete', [PresensiController::class, 'delete_multiple_presensi'])
          ->name('presensi.multiple_delete');
     });
@@ -114,19 +97,12 @@ Route::middleware(DashboardMiddleware::class)->group(function () {
         // POST
         Route::post('/setting/website', 'update_website')->name('setting.website');
         Route::post('/setting/lokasi', 'update_Location')->name('setup.location');
-        Route::post('/setting/sosmed', 'setupSosmed')->name('setting.sosmed');
-        Route::post('/setting/insert/sosmed', 'insert_sosmed')->name('insert.sosmed');
-        Route::post('/setting/update/sosmed', 'update_sosmed')->name('update.sosmed');
+
+
 
         // SHIFT
         Route::post('/setting/shift/insert', 'update_shift')->name('setup.shift.save');
         Route::get('/setting/shift/delete/{id}', 'delete_shift')->name('setup.shift.delete');
-
-        // GLOBAL
-        Route::post('/switch/{db?}', 'switch');
-        Route::post('/delete', 'hapusdata');
-        Route::post('/single/{db?}/{id?}', 'single');
-        Route::post('/allDelete/{db?}/{id?}', 'allDelete');
     });
 });
 

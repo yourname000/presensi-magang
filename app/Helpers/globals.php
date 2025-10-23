@@ -171,18 +171,18 @@ if (!function_exists('cetak_laporan_presensi')) {
                 if ($user['presensi'][$date]['keterangan'] ?? false) {
                     $arrKet[] = $user['presensi'][$date]['keterangan'];
                 }
+                //Komentari kode ini untuk tidka menampilkan jumlah terlambat dan pulang cepat tiap harinya apada karyawan
+                // if (($user['presensi'][$date]['status_terlambat'] ?? null) === 'Y') {
+                //     $arrKet[] = 'Terlambat ' . $user['presensi'][$date]['terlambat'] . ' Menit Dengan Izin';
+                // } elseif (($user['presensi'][$date]['status_terlambat'] ?? null) === 'N') {
+                //     $arrKet[] = 'Terlambat ' . $user['presensi'][$date]['terlambat'] . ' Menit Tanpa Izin';
+                // }
 
-                if (($user['presensi'][$date]['status_terlambat'] ?? null) === 'Y') {
-                    $arrKet[] = 'Terlambat ' . $user['presensi'][$date]['terlambat'] . ' Menit Dengan Izin';
-                } elseif (($user['presensi'][$date]['status_terlambat'] ?? null) === 'N') {
-                    $arrKet[] = 'Terlambat ' . $user['presensi'][$date]['terlambat'] . ' Menit Tanpa Izin';
-                }
-
-                if (($user['presensi'][$date]['status_pulang_cepat'] ?? null) === 'Y') {
-                    $arrKet[] = 'Pulang Cepat ' . $user['presensi'][$date]['pulang_cepat'] . ' Menit Dengan Izin';
-                } elseif (($user['presensi'][$date]['status_pulang_cepat'] ?? null) === 'N') {
-                    $arrKet[] = 'Pulang Cepat ' . $user['presensi'][$date]['pulang_cepat'] . ' Menit Tanpa Izin';
-                }
+                // if (($user['presensi'][$date]['status_pulang_cepat'] ?? null) === 'Y') {
+                //     $arrKet[] = 'Pulang Cepat ' . $user['presensi'][$date]['pulang_cepat'] . ' Menit Dengan Izin';
+                // } elseif (($user['presensi'][$date]['status_pulang_cepat'] ?? null) === 'N') {
+                //     $arrKet[] = 'Pulang Cepat ' . $user['presensi'][$date]['pulang_cepat'] . ' Menit Tanpa Izin';
+                // }
 
                 if (!empty($arrKet)) {
                     $ketText = implode(' | ', $arrKet);
