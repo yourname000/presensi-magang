@@ -171,7 +171,7 @@ if (!function_exists('cetak_laporan_presensi')) {
                 if ($user['presensi'][$date]['keterangan'] ?? false) {
                     $arrKet[] = $user['presensi'][$date]['keterangan'];
                 }
-                //Komentari kode ini untuk tidka menampilkan jumlah terlambat dan pulang cepat tiap harinya apada karyawan
+                //Komentari kode ini untuk tidak menampilkan jumlah terlambat dan pulang cepat tiap harinya apada karyawan
                 // if (($user['presensi'][$date]['status_terlambat'] ?? null) === 'Y') {
                 //     $arrKet[] = 'Terlambat ' . $user['presensi'][$date]['terlambat'] . ' Menit Dengan Izin';
                 // } elseif (($user['presensi'][$date]['status_terlambat'] ?? null) === 'N') {

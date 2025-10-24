@@ -16,6 +16,7 @@
         $('#table_departemen').DataTable({
             paging: true,
             searching: false,
+            lengthChange: false,
             ordering: true
         });
     });

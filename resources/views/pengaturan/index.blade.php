@@ -27,6 +27,7 @@
 
     <div class="row mb-4">
         <div class="col-lg-10 mx-auto">
+            
             {{-- Card --}}
             <div class="card pengaturan-card">
                 <div class="card-body">

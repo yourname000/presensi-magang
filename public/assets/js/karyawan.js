@@ -9,6 +9,7 @@ $(document).ready(function() {
     const dataTable = $('#table_karyawan').DataTable({
         paging: true,
         searching: false,
+        lengthChange: false,
         ordering: true,
         // Matikan sorting pada kolom checkbox (index 0) agar #checkAll bisa diklik
         columnDefs: [{ targets: 0, orderable: false }]

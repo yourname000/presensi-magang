@@ -121,14 +121,17 @@ class PresensiController extends Controller
         $baseQuery .= " AND users.id_departemen = ?";
         $bindings[] = $filterDepartemen;
     }
-    
+
     // Filter status tambahan
     if ($filterStatus != 'all') {
         if ($filterStatus == 'L') {
             $baseQuery .= " AND presensi.lembur > 0";
         } elseif ($filterStatus == 'T') {
             $baseQuery .= " AND presensi.terlambat = 'Y'";
-    }}
+        } elseif ($filterStatus == 'P') {
+            $baseQuery .= " AND presensi.pulang_cepat > 0";
+        }
+    }
 
     $baseQuery .= " ORDER BY dates.tanggal DESC, users.nama ASC";
 
@@ -480,6 +483,8 @@ public function delete_multiple_presensi(Request $request)
                 $query .= " AND presensi.lembur > 0";
             } elseif ($request->filter_status == 'T') {
                 $query .= " AND presensi.terlambat = 'Y'";
+            } elseif ($request->filter_status == 'P') {
+                $query .= " AND presensi.pulang_cepat > 0";
             }
         }
 
@@ -542,14 +547,15 @@ public function delete_multiple_presensi(Request $request)
                         $row->keterangan
                     ];
                 }
-            } elseif ($request->filter_status == 'I') {
-                $heading = ['NO', 'NAMA', 'DEPARTEMEN', 'TANGGAL','KETERANGAN'];
+            } elseif ($request->filter_status == 'P') {
+                $heading = ['NO', 'NAMA', 'DEPARTEMEN', 'TANGGAL','WAKTU PULANG CEPAT (M)','KETERANGAN'];
                 foreach ($rows as $row) {
                     $data[] = [
                         $no++,
                         $row->nama,
                         $row->departemen_nama,
                         date('d/m/Y', strtotime($row->tanggal_presensi)),
+                        $row->pulang_cepat ?? 0,
                         $row->keterangan
                     ];
                 }
@@ -587,6 +593,7 @@ public function delete_multiple_presensi(Request $request)
         $arrSts = [
     'L' => 'Lembur',
     'T' => 'Terlambat',
+    'P'=>'Pulang Cepat',
     ];
 
     // Tentukan judul default jika filter kosong

@@ -113,6 +113,7 @@
                         <option value="L" {{ $filter['status'] == 'L' ? 'selected' : '' }}>Lembur</option>
                         {{-- <option value="I" {{ $filter['status'] == 'I' ? 'selected' : '' }}>Izin</option> --}}
                         <option value="T" {{ $filter['status'] == 'T' ? 'selected' : '' }}>Terlambat</option>
+                         <option value="P" {{ $filter['status'] == 'P' ? 'selected' : '' }}>Pulang Cepat</option>
                     </select>
                 </div>
             </div>
@@ -301,15 +302,15 @@
                     {{-- Hitungan Terlambat, Pulang Cepat, Lembur --}}
                     <div class="row">
                         <div class="col-4 mb-3">
-                            <label class="form-label fw-semibold">Terlambat (mnt)</label>
+                            <label class="form-label fw-semibold">Terlambat (m)</label>
                             <input type="number" name="waktu_terlambat" class="form-control" value="{{ $row->waktu_terlambat ?? 0 }}">
                         </div>
                         <div class="col-4 mb-3">
-                            <label class="form-label fw-semibold">Pulang Cepat (mnt)</label>
+                            <label class="form-label fw-semibold">Pulang Cepat (m)</label>
                             <input type="number" name="pulang_cepat" class="form-control" value="{{ $row->pulang_cepat ?? 0 }}">
                         </div>
                         <div class="col-4 mb-3">
-                            <label class="form-label fw-semibold">Lembur (mnt)</label>
+                            <label class="form-label fw-semibold">Lembur (m)</label>
                             <input type="number" name="lembur" class="form-control" value="{{ $row->lembur ?? 0 }}">
                         </div>
                     </div>

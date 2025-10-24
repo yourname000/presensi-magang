@@ -5,6 +5,7 @@ $(document).ready(function () {
         paging: true,
         searching: false, // Biarkan DataTables menangani pencarian global
         ordering: false,
+        lengthChange: false,
         responsive: true,
         autoWidth: false,
         order: [[1, 'desc']], // Urutkan default berdasarkan kolom Tanggal (indeks 1) secara Descending
