@@ -48,8 +48,9 @@
                     </div>
                 </div>
             </div>
+            @endsection
             <!-- End Card -->
         </div>
     </div>
 </div>
-@endsection
+

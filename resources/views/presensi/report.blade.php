@@ -66,10 +66,13 @@
 
 
 @section('content')
-<div class="container-xxl" id="kt_content_container">
-    <div class="row gx-5 gx-xl-10 mb-xl-10 mb-sm-5">
-        @include('partials.admin.heading') 
-    </div>
+<div class="container-fluid p-0">
+    @include('partials.admin.heading')
+
+    <div class="row mt-5">
+        <div class="row px-4">
+        <div class="col-lg-10 mx-auto"></div>
+
 
     {{-- FILTER FORM --}}
     <div class="row mb-5 px-5">
