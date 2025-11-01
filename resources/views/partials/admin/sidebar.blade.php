@@ -15,7 +15,7 @@
                 <a href="{{ route('dashboard') }}" class="nav-link {{ $segment1 == 'dashboard' && !$segment2 ? 'active' : '' }}">
                     <i class="fa-solid fa-house-chimney me-2"></i> Beranda
                 </a>
-            </li>
+            </li> -->
 
             {{-- 🔹 Menu khusus untuk Karyawan --}}
             @if(session(config('session.prefix') . '_peran') == 2)
@@ -25,7 +25,7 @@
                         <i class="fa-solid fa-user me-2"></i> Profil
                     </a>
                 </li>
-            @endif -->
+            @endif
 
             {{-- 🔹 Menu khusus untuk Admin --}}
             @if(session(config('session.prefix') . '_peran') == 1)
