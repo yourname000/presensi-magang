@@ -54,7 +54,7 @@ class AuthController extends Controller
         $request->session()->regenerate();
 
         return redirect()
-            ->route('dashboard')
+            ->route('master.departemen')
             ->with('success', 'Selamat datang ' . $user->nama);
     }
 
