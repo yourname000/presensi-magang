@@ -7,6 +7,7 @@ use App\Models\Presensi;
 use App\Models\User;
 use App\Models\Shift;
 use App\Models\Departemen;
+use App\Models\Pengaturan;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon; // 🚨 Tambahkan ini
 use Illuminate\Support\Facades\Session;
@@ -282,15 +283,42 @@ public function insert_presensi(Request $request)
     $id_departemen    = $request->input('id_departemen');
     $id_shift         = $request->input('id_shift');
     $tanggal_presensi = now()->toDateString();
-    $status = $request->input('status'); // Masuk atau Pulang
+    $status           = $request->input('status'); // Masuk atau Pulang
     $id_presensi      = $request->input('id_presensi');
     $waktu_terlambat  = $request->input('waktu_terlambat', 0);
-    $lat = $request->input('lat_in');
-    $lng = $request->input('lng_in');
+   $status = $request->input('status');
+    if ($status === 'Masuk') {
+        $lat_user = $request->input('lat_in');
+        $lng_user = $request->input('lng_in');
+    } else {
+        $lat_user = $request->input('lat_out');
+        $lng_user = $request->input('lng_out');
+    }
+
+
     if (empty($id_user) || empty($id_departemen)) {
         return redirect()->back()->with('error', 'Data karyawan dan departemen wajib diisi!');
     }
 
+    // === Ambil lokasi kantor dari tabel Pengaturan ===
+    $setting = Pengaturan::find(1);
+    if (!$setting) {
+        return redirect()->back()->with('error', 'Lokasi kantor belum diset!');
+    }
+
+    $lat_kantor = $setting->lat;
+    $lng_kantor = $setting->lng;
+    $radius_kantor = $setting->radius; // dalam meter
+
+    // === Hitung jarak dengan Haversine ===
+    $jarak = $this->hitungJarak($lat_kantor, $lng_kantor, $lat_user, $lng_user);
+
+    // === Validasi apakah user berada dalam radius kantor ===
+    if ($jarak > $radius_kantor) {
+        return redirect()->back()->with('error', 'Kamu berada di luar area kantor! (Jarak: ' . round($jarak, 2) . ' meter)');
+    }
+
+    // === Jika dalam area, lanjut proses presensi ===
     $shift = Shift::find($id_shift);
     if (!$shift) {
         return redirect()->back()->with('error', 'Shift tidak ditemukan!');
@@ -325,11 +353,11 @@ public function insert_presensi(Request $request)
             'terlambat'        => $status_terlambat,
             'waktu_terlambat'  => $menit_terlambat,
             'status'           => $status_karyawan,
-            'lat_in'           => $request->lat_in,
-            'lng_in'           => $request->lng_in
+            'lat_in'           => $lat_user,
+            'lng_in'           => $lng_user
         ]);
 
-        return redirect()->back()->with('success', 'Presensi masuk berhasil direkam!');
+        return redirect()->back()->with('success', 'Presensi masuk berhasil! (Jarak: ' . round($jarak, 2) . ' meter)');
     }
 
     // === PRESENSI PULANG ===
@@ -339,36 +367,47 @@ public function insert_presensi(Request $request)
         $lembur_menit        = 0;
         $status_karyawan     = 'Pulang Normal';
 
-        // hitung pulang cepat atau lembur
         if ($sekarang->lt($jam_pulang_shift)) {
-            // Pulang lebih awal
             $status_pulang_cepat = 'Y';
             $menit_pulang_cepat  = abs($jam_pulang_shift->diffInMinutes($sekarang));
-            $lembur_menit        = 0; // pastikan lembur nol
             $status_karyawan     = 'Pulang Cepat';
         } elseif ($sekarang->gt($jam_pulang_shift)) {
-            // Pulang lembur
-            $status_pulang_cepat = 'N';
-            $menit_pulang_cepat  = 0; // pastikan pulang cepat nol
-            $lembur_menit        = abs($sekarang->diffInMinutes($jam_pulang_shift));
-            $status_karyawan     = 'Lembur';
+            $lembur_menit    = abs($sekarang->diffInMinutes($jam_pulang_shift));
+            $status_karyawan = 'Lembur';
         }
 
         $presensi->update([
             'scan_out'            => $sekarang->toTimeString(),
             'status_pulang_cepat' => $status_pulang_cepat,
             'pulang_cepat'        => $menit_pulang_cepat,
-            'lat_out'     => $request->lat_out,
-            'lng_out'     => $request->lng_out,
             'lembur'              => $lembur_menit,
+            'lat_out'             => $request->lat_out,
+            'lng_out'             => $request->lng_out,
             'status'              => $status_karyawan,
         ]);
 
-        return redirect()->back()->with('success', 'Presensi pulang berhasil direkam!');
+        return redirect()->back()->with('success', 'Presensi pulang berhasil! (Jarak: ' . round($jarak, 2) . ' meter)');
     }
 
     return redirect()->back()->with('info', 'Presensi hari ini sudah lengkap (masuk & pulang).');
 }
+
+// === Fungsi Haversine ===
+private function hitungJarak($lat1, $lon1, $lat2, $lon2)
+{
+    $R = 6371000; // radius bumi (meter)
+    $dLat = deg2rad($lat2 - $lat1);
+    $dLon = deg2rad($lon2 - $lon1);
+
+    $a = sin($dLat / 2) * sin($dLat / 2) +
+        cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+        sin($dLon / 2) * sin($dLon / 2);
+
+    $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+
+    return $R * $c; // hasil meter
+}
+
 
 
 public function delete_multiple_presensi(Request $request)
