@@ -10,7 +10,7 @@
     <div class="sidebar-menu">
         <ul class="nav flex-column">
 
-            {{-- 🔹 Menu umum (semua user) --}}
+            <!-- {{-- 🔹 Menu umum (semua user) --}}
             <li class="nav-item">
                 <a href="{{ route('dashboard') }}" class="nav-link {{ $segment1 == 'dashboard' && !$segment2 ? 'active' : '' }}">
                     <i class="fa-solid fa-house-chimney me-2"></i> Beranda
@@ -25,7 +25,7 @@
                         <i class="fa-solid fa-user me-2"></i> Profil
                     </a>
                 </li>
-            @endif
+            @endif -->
 
             {{-- 🔹 Menu khusus untuk Admin --}}
             @if(session(config('session.prefix') . '_peran') == 1)
