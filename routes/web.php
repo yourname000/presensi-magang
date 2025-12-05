@@ -37,7 +37,6 @@ Route::middleware(DashboardMiddleware::class)->group(function () {
     Route::controller(DashboardController::class)->group(function () {
         Route::get('/dashboard', 'index')->name('dashboard');
         Route::post('/profile', 'updateProfile')->name('update.profile');
-        Route::post('/absen-location', 'absenLocation')->name('absen.location');
     });
 
     // -------------------------
@@ -76,15 +75,6 @@ Route::middleware(DashboardMiddleware::class)->group(function () {
         Route::post('/export-presensi', 'export_presensi')->name('export.presensi');
         Route::post('/presensi/multiple-delete', [PresensiController::class, 'delete_multiple_presensi'])
          ->name('presensi.multiple_delete');
-    });
-
-    // -------------------------
-    // DATATABLES MANAGEMENT
-    // -------------------------
-    Route::controller(TableManagement::class)->group(function () {
-        Route::post('/table/departemen', 'table_departemen')->name('table.departemen');
-        Route::post('/table/karyawan', 'table_karyawan')->name('table.karyawan');
-        Route::post('/table/presensi', 'table_presensi')->name('table.presensi');
     });
 
     // -------------------------

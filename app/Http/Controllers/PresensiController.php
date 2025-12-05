@@ -409,7 +409,6 @@ private function hitungJarak($lat1, $lon1, $lat2, $lon2)
 }
 
 
-
 public function delete_multiple_presensi(Request $request)
 {
     // Ambil ID dari data yang dipilih.

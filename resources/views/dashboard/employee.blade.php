@@ -2,6 +2,7 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('assets/css/employee.css') }}">
+@endpush
 
 @push('script')
 <script src="{{ asset('assets/js/employee.js') }}"></script>
@@ -10,7 +11,7 @@
 @section('content')
 <!--begin::Container-->
 <div class="container-xxl d-flex flex-column justify-content-center align-items-center min-vh-100 py-5" id="kt_content_container" style="margin-bottom: 0 !important;">
-    
+
     <!--begin::Row Heading-->
     <div class="row gx-5 gx-xl-10 w-100 mb-4">
         @include('partials.admin.heading')
@@ -98,12 +99,23 @@
                                     @else
                                         <span class="badge bg-success py-3 px-5">Pulang Normal</span>
                                     @endif
-
                                 </div>
                             </div>
                         </div>
 
-                        {{-- TOMBOL PRESENSI (SATU SAJA) --}}
+                        {{-- DATA KOORDINAT KANTOR (AMAN jika $office tidak ada) --}}
+                        @php
+                            // fallback: coba ambil dari $setting jika $office tidak ada
+                            $latOffice = $office->latitude ?? ($setting->lat ?? null) ?? null;
+                            $lngOffice = $office->longitude ?? ($setting->lng ?? null) ?? null;
+                            $radiusOffice = $office->radius ?? ($setting->radius ?? null) ?? null;
+                        @endphp
+
+                        <span id="officeLat" data-value="{{ $latOffice }}"></span>
+                        <span id="officeLng" data-value="{{ $lngOffice }}"></span>
+                        <span id="officeRadius" data-value="{{ $radiusOffice }}"></span>
+
+                        {{-- TOMBOL PRESENSI --}}
                         <div class="col-12 d-flex justify-content-center mt-10">
                             @if(!$presensi || !$presensi->scan_in)
                                 <button type="button" class="btn btn-primary px-10" onclick="presensi_location('Masuk')" style="border-radius:20px">
@@ -124,12 +136,13 @@
             </div>
         </div>
     </div>
+
 </div>
 
 {{-- MODAL PRESENSI --}}
 <div class="modal fade" id="presensiModal" tabindex="-1" aria-labelledby="presensiModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered" style="max-width:450px">
-          <div class="modal-content shadow-lg px-4 py-3"> 
+          <div class="modal-content shadow-lg px-4 py-3">
             <div class="modal-header border-0 pb-0 bg-light">
                 <div class="text-center w-100">
                     <p class="mb-0 text-secondary small">
@@ -148,7 +161,7 @@
             </div>
 
             <div class="modal-body pt-0 pb-2">
-                <div class="alert alert-success text-center py-3" role="alert">
+                <div id="lokasiAlert" class="alert alert-success text-center py-3" role="alert" style="display:none;">
                     <i class="fa-solid fa-check-circle fs-2 mb-2"></i><br>
                     Lokasi Valid - Anda berada dalam radius kantor
                 </div>
@@ -184,17 +197,19 @@
             </div>
 
             <div class="d-flex justify-content-between mt-3">
-            <button type="button" class="btn btn-danger w-50 me-2" data-bs-dismiss="modal">
-                Batal
-            </button>
-            <button type="button" class="btn btn-warning w-50" onclick="handleKonfirmasi()">
-                Konfirmasi
-            </button>
+                <button type="button" class="btn btn-danger w-50 me-2" data-bs-dismiss="modal">
+                    Batal
+                </button>
+                <button type="button" class="btn btn-warning w-50" onclick="handleKonfirmasi()">
+                    Konfirmasi
+                </button>
+            </div>
         </div>
     </div>
 </div>
 
 @endsection
+
 
 <!-- Modal Update Profil -->
 <div class="modal fade" id="kt_modal_profile" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
